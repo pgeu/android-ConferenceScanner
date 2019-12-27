@@ -1,0 +1,68 @@
+<?xml version="1.0" encoding="utf-8"?>
+<androidx.constraintlayout.widget.ConstraintLayout xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:app="http://schemas.android.com/apk/res-auto"
+    xmlns:tools="http://schemas.android.com/tools"
+    android:layout_width="match_parent"
+    android:layout_height="match_parent"
+    tools:context=".AttendeeCheckinActivity">
+
+    <ListView
+        android:id="@+id/lv_checkin"
+        android:layout_width="match_parent"
+        android:layout_height="0dp"
+        app:layout_constraintTop_toTopOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/txt_notesHeader" />
+
+    <TextView
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:id="@+id/txt_notesHeader"
+        app:layout_constraintTop_toBottomOf="@id/lv_checkin"
+        app:layout_constraintBottom_toTopOf="@id/edit_notes"
+        android:text="Notes"
+        android:textSize="16sp"
+        android:labelFor="@id/edit_notes"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="2dp" />
+
+    <EditText
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:lines="4"
+        android:minLines="4"
+        android:maxLines="4"
+        android:id="@+id/edit_notes"
+        android:layout_marginLeft="8dp"
+        android:layout_marginTop="2dp"
+        android:layout_marginRight="8dp"
+        android:gravity="top"
+        app:layout_constraintTop_toBottomOf="@id/txt_notesHeader"
+        app:layout_constraintBottom_toTopOf="@id/btn_Cancel"
+        android:text=""
+        android:autofillHints="Write any notes about this attendee to store here"
+        android:background="@drawable/edit_text_border"
+        android:inputType="text|textAutoCorrect|textMultiLine" />
+
+    <Button
+        android:id="@+id/btn_CheckIn"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Check in!"
+        android:layout_margin="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edit_notes"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toLeftOf="@id/btn_Cancel" />
+
+    <Button
+        android:id="@+id/btn_Cancel"
+        android:layout_width="0dp"
+        android:layout_height="wrap_content"
+        android:text="Cancel"
+        android:layout_margin="8dp"
+        app:layout_constraintBottom_toBottomOf="parent"
+        app:layout_constraintTop_toBottomOf="@id/edit_notes"
+        app:layout_constraintLeft_toRightOf="@id/btn_CheckIn"
+        app:layout_constraintRight_toRightOf="parent" />
+
+</androidx.constraintlayout.widget.ConstraintLayout>

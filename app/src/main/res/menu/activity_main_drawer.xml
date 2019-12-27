@@ -1,0 +1,24 @@
+<?xml version="1.0" encoding="utf-8"?>
+<menu xmlns:android="http://schemas.android.com/apk/res/android"
+    xmlns:tools="http://schemas.android.com/tools"
+    tools:showIn="navigation_view">
+
+    <item
+        android:title="Check-in"
+        android:id="@+id/itemCheckin">
+        <menu android:id="@+id/menuCheckin"></menu>
+    </item>
+    <item
+        android:title="Sponsor"
+        android:id="@+id/itemSponsor">
+        <menu android:id="@+id/menuSponsor"></menu>
+    </item>
+    <item android:title="Manage">
+        <item
+            android:id="@+id/itemManage"
+            android:title="Edit conferences" />
+        <item
+            android:id="@+id/itemAdd"
+            android:title="Add conference" />
+    </item>
+</menu>
