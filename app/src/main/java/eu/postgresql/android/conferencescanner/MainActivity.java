@@ -6,6 +6,7 @@ import android.content.pm.PackageManager;
 import android.os.AsyncTask;
 import android.os.Bundle;
 
+import android.os.Handler;
 import android.text.InputType;
 import android.view.SubMenu;
 import android.view.TextureView;
@@ -131,6 +132,26 @@ public class MainActivity extends AppCompatActivity
             UpdateNavigationView();
             UpdateMainView();
         }
+
+        if (savedInstanceState != null) {
+            if (savedInstanceState.getBoolean("cameraActive", false)) {
+                /*
+                 * For some reason the camera can't be immediately started after a rotation change, so delay the start
+                 * by 100ms. Given the "jump" in the rotation change anyway this should not be noticeable, but fixes
+                 * the annoying need to restart the camera.
+                 */
+                final Handler handler = new Handler();
+                handler.postDelayed(() -> {
+                    StartCamera();
+                }, 100);
+            }
+        }
+    }
+
+    @Override
+    protected void onSaveInstanceState(Bundle state) {
+        super.onSaveInstanceState(state);
+        state.putBoolean("cameraActive", cameraActive);
     }
 
     @Override
