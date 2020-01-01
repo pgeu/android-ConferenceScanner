@@ -160,6 +160,9 @@ public class MainActivity extends AppCompatActivity
 
         currentConference = null;
 
+        if (intent.getDataString() == null)
+            return;
+
         /* Called with an URL. Let's see if the conf is already registered */
         String url = _clean_conference_url(intent.getDataString());
         for (int i = 0; i < conferences.size(); i++) {
