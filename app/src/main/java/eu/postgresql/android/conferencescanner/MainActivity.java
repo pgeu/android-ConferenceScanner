@@ -363,10 +363,11 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.itemAdd) {
             final EditText input = new EditText(this);
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
+            input.setHint("https://test.com/events/test/checking/abc123def456/");
 
             new AlertDialog.Builder(this)
                     .setTitle("Enter URL")
-                    .setMessage("Paste the full URL for scanning application")
+                    .setMessage("Paste the full URL for scanning application (this will be an URL that contains a long random set of characters at the end).\n\nNote that in most cases you can also click the link in the email or on the website where you received it, and the conference will automatically be added.")
                     .setView(input)
                     .setNegativeButton("Cancel", null)
                     .setPositiveButton("Add", (dialogInterface, i) -> AddNewConference(input.getText().toString()))
