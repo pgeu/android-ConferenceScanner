@@ -91,7 +91,7 @@ public class ListConferencesActivity extends AppCompatActivity {
     }
 
     private class ConferencesAdapter extends ArrayAdapter<ConferenceEntry> {
-        public ConferencesAdapter(@NonNull Context context, @NonNull List<ConferenceEntry> objects) {
+        private ConferencesAdapter(@NonNull Context context, @NonNull List<ConferenceEntry> objects) {
             super(context, 0, objects);
         }
 

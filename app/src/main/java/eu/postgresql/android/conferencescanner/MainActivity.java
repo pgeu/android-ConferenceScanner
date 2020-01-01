@@ -72,8 +72,8 @@ public class MainActivity extends AppCompatActivity
     private ConferenceEntry currentConference = null;
     private final int MENU_FIRST_CONFERENCE = 100000;
 
-    public static final int INTENT_RESULT_LIST_UPDATED = 1;
-    public static final int INTENT_RESULT_CHECKED_IN = 2;
+    private static final int INTENT_RESULT_LIST_UPDATED = 1;
+    private static final int INTENT_RESULT_CHECKED_IN = 2;
 
     public static final int RESULT_ERROR = -2;
     private Menu optionsMenu;
@@ -149,7 +149,7 @@ public class MainActivity extends AppCompatActivity
     }
 
     @Override
-    protected void onSaveInstanceState(Bundle state) {
+    protected void onSaveInstanceState(@NonNull Bundle state) {
         super.onSaveInstanceState(state);
         state.putBoolean("cameraActive", cameraActive);
     }
@@ -433,7 +433,7 @@ public class MainActivity extends AppCompatActivity
         return url.replaceAll("[/#]+$", "");
     }
 
-    final Pattern urlpattern = Pattern.compile("^https?://[^/]+/events/[^/]+/(checkin|scanning)/.*");
+    private final Pattern urlpattern = Pattern.compile("^https?://[^/]+/events/[^/]+/(checkin|scanning)/.*");
 
     private void AddNewConference(String url) {
         String cleanurl = _clean_conference_url(url);
@@ -457,7 +457,7 @@ public class MainActivity extends AppCompatActivity
         private boolean skip = false;
         private String confname = null;
 
-        public DoAddConference(ApiBase api) {
+        private DoAddConference(ApiBase api) {
             this.api = api;
         }
 
@@ -581,16 +581,17 @@ public class MainActivity extends AppCompatActivity
     }
 
     private class aHandleScannedCode extends AsyncTask<Void, Void, JSONObject> {
-        private ApiBase api;
-        private String qrstring;
+        private final ApiBase api;
+        private final String qrstring;
 
-        public aHandleScannedCode(String qrstring) {
+        private aHandleScannedCode(String qrstring) {
             this.qrstring = qrstring;
+            api = currentConference.getApi(MainActivity.this);
         }
+
         @Override
         protected void onPreExecute() {
             pauseDetection = true;
-            api = currentConference.getApi(MainActivity.this);
             progressBar.setVisibility(View.VISIBLE);
         }
 
@@ -680,7 +681,7 @@ public class MainActivity extends AppCompatActivity
         private final CheckinApi api;
         private final int regid;
 
-        public aDoCheckin(int regid) {
+        private aDoCheckin(int regid) {
             this.regid = regid;
             api = (CheckinApi) currentConference.getApi(MainActivity.this);
         }
@@ -740,7 +741,7 @@ public class MainActivity extends AppCompatActivity
         private final String note;
         private final SponsorApi api;
 
-        public aDoSponsorScan(String token, String note) {
+        private aDoSponsorScan(String token, String note) {
             this.token = token;
             this.note = note;
             api = (SponsorApi) currentConference.getApi(MainActivity.this);

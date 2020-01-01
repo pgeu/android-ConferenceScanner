@@ -16,13 +16,13 @@ import com.google.firebase.ml.vision.common.FirebaseVisionImageMetadata;
 
 import java.util.List;
 
-public class QRAnalyzer implements ImageAnalysis.Analyzer, OnSuccessListener<List<FirebaseVisionBarcode>> {
+class QRAnalyzer implements ImageAnalysis.Analyzer, OnSuccessListener<List<FirebaseVisionBarcode>> {
     public interface QRNotificationReceiver {
         void OnQRCodeFound(String qrstring);
     }
 
-    private FirebaseVisionBarcodeDetector detector;
-    private QRNotificationReceiver notificationReceiver;
+    private final FirebaseVisionBarcodeDetector detector;
+    private final QRNotificationReceiver notificationReceiver;
 
     public QRAnalyzer(QRNotificationReceiver notificationReceiver) {
         this.notificationReceiver = notificationReceiver;

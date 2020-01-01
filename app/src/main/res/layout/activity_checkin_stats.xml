@@ -14,5 +14,5 @@
         android:divider="@android:color/darker_gray"
         android:dividerHeight="0.5dp"
         app:layout_constraintBottom_toBottomOf="parent"
-        app:layout_constraintTop_toTopOf="parent"></ExpandableListView>
+        app:layout_constraintTop_toTopOf="parent" />
 </androidx.constraintlayout.widget.ConstraintLayout>

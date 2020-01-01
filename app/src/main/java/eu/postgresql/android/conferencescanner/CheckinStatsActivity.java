@@ -26,7 +26,7 @@ public class CheckinStatsActivity extends AppCompatActivity {
         getSupportActionBar().setDisplayHomeAsUpEnabled(true);
         getSupportActionBar().setDisplayShowHomeEnabled(true);
 
-        JSONArray data = null;
+        JSONArray data;
         try {
             data = new JSONArray(getIntent().getStringExtra("data"));
         } catch (JSONException e) {
@@ -49,13 +49,13 @@ public class CheckinStatsActivity extends AppCompatActivity {
         return super.onOptionsItemSelected(item);
     }
 
-    protected class StatsAdapter extends BaseExpandableListAdapter {
+    private class StatsAdapter extends BaseExpandableListAdapter {
         private final JSONArray data;
         private final Context ctx;
 
         private static final String UNPARSEABLE_JSON = "Unparseable JSON";
 
-        public StatsAdapter(Context ctx, JSONArray data) {
+        private StatsAdapter(Context ctx, JSONArray data) {
             this.ctx = ctx;
             this.data = data;
         }

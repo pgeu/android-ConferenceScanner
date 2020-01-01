@@ -30,10 +30,10 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
     private int regid;
 
     private class CheckinParam {
-        String name;
-        String value;
+        final String name;
+        final String value;
 
-        public CheckinParam(String name, String value) {
+        private CheckinParam(String name, String value) {
             this.name = name;
             this.value = value;
         }
@@ -174,6 +174,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
     }
 
 
+    @SuppressWarnings("SameParameterValue")
     private void FinishWithError(String msg) {
         Intent i = new Intent();
         i.putExtra("msg", msg);
@@ -183,7 +184,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
     }
 
     private class CheckinAdapter extends ArrayAdapter<CheckinParam> {
-        public CheckinAdapter(@NonNull Context context, @NonNull List<CheckinParam> objects) {
+        private CheckinAdapter(@NonNull Context context, @NonNull List<CheckinParam> objects) {
             super(context, 0, objects);
         }
 

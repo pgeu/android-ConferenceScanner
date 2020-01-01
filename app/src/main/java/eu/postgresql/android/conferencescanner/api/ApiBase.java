@@ -21,9 +21,10 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+@SuppressWarnings("WeakerAccess")
 public abstract class ApiBase {
-    private Context ctx;
-    public String baseurl;
+    private final Context ctx;
+    public final String baseurl;
 
     protected String lasterror = null;
     protected int laststatus = -1;
@@ -69,6 +70,7 @@ public abstract class ApiBase {
         return null;
     }
 
+    @SuppressWarnings("SameParameterValue")
     protected JSONArray ApiGetJSONArray(String suburl) {
         try {
             String s = ApiGetString(suburl);
@@ -160,8 +162,8 @@ public abstract class ApiBase {
     }
 
     public class OpenAndAdmin {
-        public boolean open;
-        public boolean admin;
+        public final boolean open;
+        public final boolean admin;
 
         public OpenAndAdmin(boolean open, boolean admin) {
             this.open = open;
