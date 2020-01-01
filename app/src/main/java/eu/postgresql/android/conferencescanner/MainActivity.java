@@ -66,6 +66,7 @@ public class MainActivity extends AppCompatActivity
     private TextView txtintro;
     private TextureView viewfinder;
     private Button scanbutton;
+    private Button searchbutton;
     private boolean cameraActive = false;
 
     private ArrayList<ConferenceEntry> conferences;
@@ -110,6 +111,7 @@ public class MainActivity extends AppCompatActivity
         txtintro = findViewById(R.id.txt_intro);
         viewfinder = findViewById(R.id.view_finder);
         scanbutton = findViewById(R.id.scanbutton);
+        searchbutton = findViewById(R.id.searchbutton);
         scanbutton.setOnClickListener(view -> {
             if (!cameraActive) {
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -123,6 +125,11 @@ public class MainActivity extends AppCompatActivity
             } else {
                 StopCamera();
             }
+        });
+        searchbutton.setOnClickListener(view -> {
+            if (cameraActive)
+                StopCamera();
+            DoSearchAttendee();
         });
 
         Intent intent = getIntent();
@@ -274,27 +281,34 @@ public class MainActivity extends AppCompatActivity
             getSupportActionBar().setTitle(String.format("%s - %s", currentConference.confname, currentConference.ischeckin ? "checkin attendees" : "badge scanning"));
             if (data == null) {
                 ErrorBox("Network error", api.LastError());
-            } else if (data.open) {
                 viewfinder.setVisibility(View.INVISIBLE);
-                scanbutton.setVisibility(View.VISIBLE);
-                if (currentConference.ischeckin) {
-                    txtintro.setText(String.format("Ready to check attendees in to %s!\n\nTo scan an attendee, turn on the camera below and focus it on the QR code on the ticket!", currentConference.confname));
-                } else {
-                    txtintro.setText(String.format("Welcome as a sponsor scanner for %s.\n\nTo scan an attendee badge, turn on the camera below and focus it on the QR code on the attendee badge. Once a QR code is detected, the system will proceed automatically.", currentConference.confname));
-                }
+                searchbutton.setVisibility(View.GONE);
+                scanbutton.setVisibility(View.GONE);
+                txtintro.setText("A network error occurred when communicating with the server. Please pick a different conference in the menu on the left.");
             } else {
                 viewfinder.setVisibility(View.INVISIBLE);
                 scanbutton.setVisibility(View.VISIBLE);
-                if (currentConference.ischeckin)
-                    txtintro.setText("Check-in processing is not currently open for this conference.");
-                else
-                    txtintro.setText("Badge scanning is not currently open for this conference .");
+                if (currentConference.ischeckin) {
+                    searchbutton.setVisibility(View.VISIBLE);
+                    if (data.open) {
+                        txtintro.setText(String.format("Ready to check attendees in to %s!\n\nTo scan an attendee, turn on the camera below and focus it on the QR code on the ticket!", currentConference.confname));
+                        searchbutton.setEnabled(true);
+                    } else {
+                        txtintro.setText("Check-in processing is not currently open for this conference.");
+                        searchbutton.setEnabled(false);
+                    }
+                    if (optionsMenu != null) {
+                        optionsMenu.findItem(R.id.action_statistics).setEnabled(data.admin);
+                    }
+                } else {
+                    searchbutton.setVisibility(View.GONE);
+                    if (data.open) {
+                        txtintro.setText(String.format("Welcome as a sponsor scanner for %s.\n\nTo scan an attendee badge, turn on the camera below and focus it on the QR code on the attendee badge. Once a QR code is detected, the system will proceed automatically.", currentConference.confname));
+                    } else {
+                        txtintro.setText("Badge scanning is not currently open for this conference .");
+                    }
+                }
             }
-
-            if (currentConference.ischeckin && optionsMenu != null) {
-                optionsMenu.findItem(R.id.action_statistics).setEnabled(data.admin);
-            }
-
         }
     }
 
@@ -738,6 +752,91 @@ public class MainActivity extends AppCompatActivity
         }
 
         new aDoCheckin(data.getIntExtra("regid", -1)).execute();
+    }
+
+    private class DoSearchAttendee extends AsyncTask<Void, Void, JSONObject> {
+        private final String searchterm;
+        private final CheckinApi api;
+
+        private DoSearchAttendee(String searchterm) {
+            this.searchterm = searchterm;
+            this.api = (CheckinApi) currentConference.getApi(MainActivity.this);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected JSONObject doInBackground(Void... voids) {
+            return api.Search(searchterm);
+        }
+
+        @Override
+        protected void onPostExecute(JSONObject data) {
+            progressBar.setVisibility(View.INVISIBLE);
+
+            if (data == null) {
+                if (api.LastStatus() == 412) {
+                    ScanCompletedDialog("Not ready for scan", api.LastData());
+                } else {
+                    ScanCompletedDialog("Network error", api.LastError());
+                }
+                return;
+            }
+
+            /* If a single entry is returned, then proceed as if it was a direct scan */
+            try {
+                JSONArray regs = data.getJSONArray("regs");
+                if (regs.length() == 0) {
+                    ErrorBox("No attendees found", "No attendees matching search found.");
+                } else if (regs.length() == 1) {
+                    Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
+                    intent.putExtra("reg", regs.getJSONObject(0).toString());
+                    startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                } else {
+                    String[] regnames = new String[regs.length()];
+                    for (int i = 0; i < regs.length(); i++) {
+                        regnames[i] = regs.getJSONObject(i).getString("name");
+                    }
+
+                    /* Show the list */
+                    AlertDialog dlg = new AlertDialog.Builder(MainActivity.this)
+                            .setTitle("Select attendee")
+                            .setItems(regnames, (dialogInterface, i) -> {
+                                try {
+                                    Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
+                                    intent.putExtra("reg", regs.getJSONObject(i).toString());
+                                    startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                                }
+                                catch (JSONException e) {
+                                    ErrorBox("API Error", "JSON Parser Error on API response");
+                                }
+                            })
+                            .create();
+                    dlg.show();
+                }
+            }
+            catch (JSONException e) {
+                ErrorBox("API error", "JSON Parser Error on API response");
+            }
+        }
+    }
+
+    private void DoSearchAttendee() {
+        final EditText input = new EditText(this);
+        input.setInputType(InputType.TYPE_CLASS_TEXT);
+
+        new AlertDialog.Builder(this)
+                .setTitle("Search attendee")
+                .setMessage("Enter part of attendee name")
+                .setView(input)
+                .setNegativeButton("Cancel", null)
+                .setPositiveButton("Search", (dialogInterface, i) -> {
+                    new DoSearchAttendee(input.getText().toString()).execute();
+                })
+                .show();
     }
 
     private class aDoSponsorScan extends AsyncTask<Void, Void, Boolean> {

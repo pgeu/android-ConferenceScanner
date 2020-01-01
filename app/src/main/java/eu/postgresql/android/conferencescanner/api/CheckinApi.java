@@ -45,6 +45,10 @@ public class CheckinApi extends ApiBase {
         return ApiGetJSONObject(String.format("api/lookup/?lookup=%s", urlencode(qrcode)));
     }
 
+    public JSONObject Search(String searchterm) {
+        return ApiGetJSONObject(String.format("api/search/?search=%s", urlencode(searchterm)));
+    }
+
     @Override
     public boolean IsCheckin() {
         return true;

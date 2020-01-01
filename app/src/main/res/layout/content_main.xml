@@ -34,8 +34,21 @@
         app:layout_constraintTop_toBottomOf="@id/txt_intro"
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toRightOf="parent"
-        app:layout_constraintBottom_toTopOf="@id/scanbutton" />
+        app:layout_constraintBottom_toTopOf="@id/searchbutton" />
 
+    <Button
+        android:id="@+id/searchbutton"
+        android:layout_width="match_parent"
+        android:layout_height="wrap_content"
+        android:text="Search attendee"
+        android:layout_marginTop="40dp"
+        android:layout_marginBottom="8dp"
+        android:layout_marginLeft="8dp"
+        android:layout_marginRight="8dp"
+        app:layout_constraintLeft_toLeftOf="parent"
+        app:layout_constraintRight_toRightOf="parent"
+        app:layout_constraintBottom_toTopOf="@id/scanbutton"
+        android:textSize="18sp" />
     <Button
         android:id="@+id/scanbutton"
         android:layout_width="match_parent"
