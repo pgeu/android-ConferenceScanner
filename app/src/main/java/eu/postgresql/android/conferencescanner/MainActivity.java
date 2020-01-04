@@ -316,6 +316,7 @@ public class MainActivity extends AppCompatActivity
         if (currentConference == null) {
             viewfinder.setVisibility(View.INVISIBLE);
             scanbutton.setVisibility(View.INVISIBLE);
+            searchbutton.setVisibility(View.INVISIBLE);
             getSupportActionBar().setTitle("Conference Scanner");
             txtintro.setText("No conference is currently selected. Use the menu on the left to add or select a conference!");
             StopCamera(); // To be on the safe side
