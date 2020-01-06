@@ -515,6 +515,9 @@ public class MainActivity extends AppCompatActivity
             if (confname == null) {
                 ErrorBox("Could not get conference name",
                         String.format("Failed to get the name of the conference:\n%s", api.LastError()));
+                currentConference = null;
+                UpdateNavigationView();
+                UpdateMainView();
                 return;
             }
 
