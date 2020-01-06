@@ -35,11 +35,11 @@
 
                 <!-- PostgreSQL Europe -->
                 <data
-                    android:host="www.postgresql.eu"
+                    android:host="*.postgresql.eu"
                     android:pathPattern="/events/.*/checkin/.*"
                     android:scheme="https" />
                 <data
-                    android:host="www.postgresql.eu"
+                    android:host="*.postgresql.eu"
                     android:pathPattern="/events/sponsor/scanning/.*"
                     android:scheme="https" />
             </intent-filter>
