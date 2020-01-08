@@ -42,6 +42,17 @@
                     android:host="*.postgresql.eu"
                     android:pathPattern="/events/sponsor/scanning/.*"
                     android:scheme="https" />
+
+                <!-- PostgreSQL US -->
+                <data
+                    android:host="postgresql.us"
+                    android:pathPattern="/events/.*/checkin/.*"
+                    android:scheme="https" />
+                <data
+                    android:host="postgresql.us"
+                    android:pathPattern="/events/sponsor/scanning/.*"
+                    android:scheme="https" />
+
             </intent-filter>
         </activity>
     </application>
