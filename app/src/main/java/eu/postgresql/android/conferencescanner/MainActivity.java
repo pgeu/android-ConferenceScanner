@@ -166,10 +166,11 @@ public class MainActivity extends AppCompatActivity
     protected void onNewIntent(@NonNull Intent intent) {
         super.onNewIntent(intent);
 
-        currentConference = null;
-
         if (intent.getDataString() == null)
             return;
+
+        currentConference = null;
+        UpdateMainView(); /* Disable all buttons etc */
 
         /* Called with an URL. Let's see if the conf is already registered */
         String url = _clean_conference_url(intent.getDataString());
