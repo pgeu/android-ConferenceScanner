@@ -36,7 +36,7 @@
                 <!-- PostgreSQL Europe -->
                 <data
                     android:host="*.postgresql.eu"
-                    android:pathPattern="/events/.*/checkin/.*"
+                    android:pathPattern="/events/.*/checkin/.*/"
                     android:scheme="https" />
                 <data
                     android:host="*.postgresql.eu"
@@ -46,7 +46,7 @@
                 <!-- PostgreSQL US -->
                 <data
                     android:host="postgresql.us"
-                    android:pathPattern="/events/.*/checkin/.*"
+                    android:pathPattern="/events/.*/checkin/.*/"
                     android:scheme="https" />
                 <data
                     android:host="postgresql.us"
