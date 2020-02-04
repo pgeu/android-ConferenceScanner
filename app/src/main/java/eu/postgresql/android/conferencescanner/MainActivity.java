@@ -8,6 +8,7 @@ import android.os.Bundle;
 
 import android.os.Handler;
 import android.text.InputType;
+import android.util.Log;
 import android.view.SubMenu;
 import android.view.TextureView;
 import android.view.View;
@@ -253,8 +254,10 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void ShowStatistics() {
-        if (currentConference == null)
+        if (currentConference == null) {
+            Log.e("conferencescanner", "There is no current conference!");
             return;
+        }
 
 
         new aShowStatistics().execute();
@@ -337,6 +340,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void StartCamera() {
+        if (currentConference == null) {
+            Log.e("conferencescanner", "There is no current conference!");
+            return;
+        }
+
         cameraActive = true;
         scanbutton.setText("Stop camera");
 
@@ -829,6 +837,11 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void DoSearchAttendee() {
+        if (currentConference == null) {
+            Log.e("conferencescanner", "There is no current conference!");
+            return;
+        }
+
         final EditText input = new EditText(this);
         input.setInputType(InputType.TYPE_CLASS_TEXT);
 
