@@ -83,6 +83,15 @@ public class CheckinStatsActivity extends AppCompatActivity {
         }
 
         @Override
+        public int getChildTypeCount() {
+            /*
+             * We need a pool of two types of child rows (which android will then recycle for us).
+             * One for regular rows and one for summary rows that should be bold.
+             */
+            return 2;
+        }
+
+        @Override
         public Object getGroup(int listPosition) {
             try {
                 return data.getJSONArray(listPosition).getJSONArray(0);
@@ -109,6 +118,16 @@ public class CheckinStatsActivity extends AppCompatActivity {
         @Override
         public boolean isChildSelectable(int listPosition, int expandedListPosition) {
             return true;
+        }
+
+        @Override
+        public int getChildType (int listPosition, int expandedListPosition) {
+            JSONArray row = (JSONArray) getChild(listPosition, expandedListPosition);
+            if (row.isNull(0)) {
+                /* Summary row gets a different view */
+                return 1;
+            }
+            return 0;
         }
 
         @Override
