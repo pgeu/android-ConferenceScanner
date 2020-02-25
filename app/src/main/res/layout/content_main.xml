@@ -39,7 +39,7 @@
     <Button
         android:id="@+id/searchbutton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:text="Search attendee"
         android:layout_marginTop="40dp"
         android:layout_marginBottom="8dp"
@@ -52,7 +52,7 @@
     <Button
         android:id="@+id/scanbutton"
         android:layout_width="match_parent"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:text="Start camera"
         android:layout_marginTop="40dp"
         android:layout_marginBottom="8dp"

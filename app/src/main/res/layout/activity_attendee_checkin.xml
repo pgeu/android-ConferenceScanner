@@ -46,7 +46,7 @@
     <Button
         android:id="@+id/btn_CheckIn"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:text="Check in!"
         android:layout_margin="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
@@ -57,7 +57,7 @@
     <Button
         android:id="@+id/btn_Cancel"
         android:layout_width="0dp"
-        android:layout_height="wrap_content"
+        android:layout_height="64dp"
         android:text="Cancel"
         android:layout_margin="8dp"
         app:layout_constraintBottom_toBottomOf="parent"
