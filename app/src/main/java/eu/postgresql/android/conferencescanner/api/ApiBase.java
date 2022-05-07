@@ -2,6 +2,7 @@ package eu.postgresql.android.conferencescanner.api;
 
 import android.content.Context;
 
+import com.android.volley.AuthFailureError;
 import com.android.volley.ClientError;
 import com.android.volley.Request;
 import com.android.volley.RequestQueue;
@@ -144,6 +145,11 @@ public abstract class ApiBase {
                 ClientError error = (ClientError) e.getCause();
                 laststatus = error.networkResponse.statusCode;
                 lasterror = "STATUS";
+                lastdata = error.networkResponse.data;
+            } else if (e.getCause() instanceof AuthFailureError) {
+                AuthFailureError error = (AuthFailureError) e.getCause();
+                laststatus = error.networkResponse.statusCode;
+                lasterror = "AUTH";
                 lastdata = error.networkResponse.data;
             } else
                 lasterror = String.format("Network execution error: %s", e.toString());
