@@ -640,6 +640,8 @@ public class MainActivity extends AppCompatActivity
                     ScanCompletedDialog("Attendee not found", "The scanned code does not appear to be a valid attendee of this conference.");
                 } else if (api.LastStatus() == 412) {
                     ScanCompletedDialog("Not ready for scan", api.LastData());
+                } else if (api.LastStatus() == 403) {
+                    ScanCompletedDialog("Scanning failed", api.LastData());
                 } else {
                     ScanCompletedDialog("Network error", api.LastError());
                 }
