@@ -81,9 +81,9 @@ The fields indicate:
 
 When checking in a user, the normal path is to turn on the camera and
 scan the barcode on the users *ticket*. The barcode should return a
-string of the format `ID$*token*$ID`. There is also a special test
-code that has the contents `ID$TESTTESTTESTTEST$ID` that can be used
-to validate the test.
+string of the format `https://<site>/t/id/*token*/` or `ID$*token*$ID`.
+There is also a special test  code that has the contents
+`TESTTESTTESTTEST` that can be used  to validate the test.
 
 Once the code has been scanned, a http GET is made to
 `*baseurl*/api/lookup/?lookup=*barcode*`, which returns information

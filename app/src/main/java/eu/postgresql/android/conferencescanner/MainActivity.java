@@ -46,6 +46,7 @@ import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
+import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
@@ -678,36 +679,75 @@ public class MainActivity extends AppCompatActivity
             // Should never happen, but just in case
             return;
 
-        if (currentConference.ischeckin) {
-            if (qrstring.equals(testCheckin)) {
-                ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for tickets!");
-            } else if (qrstring.equals(testBadge)) {
-                ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for badges!");
-            } else if (qrstring.startsWith("ID$") && qrstring.endsWith("$ID")) {
-                new aHandleScannedCode(qrstring).execute();
-            } else if (qrstring.startsWith("AT$") && qrstring.endsWith("$AT")) {
-                ScanCompletedDialog("Attendee badge scanned",
-                        "You have scanned an attendee badge. For checking an attendee in, you must scan their ticket, not the badge.");
-            } else {
-                ScanCompletedDialog("Unknown code scanned",
-                        "You have scanned a code is not recognized by this system");
-            }
-        } else {
-            if (qrstring.equals(testCheckin)) {
-                ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for tickets!");
-            } else if (qrstring.equals(testBadge)) {
-                ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for badges!");
-            } else if (qrstring.startsWith("AT$") && qrstring.endsWith("$AT")) {
-                new aHandleScannedCode(qrstring).execute();
-            } else if (qrstring.startsWith("ID$") && qrstring.endsWith("$ID")) {
-                ScanCompletedDialog("Ticket scanned",
-                        "You have scanned a ticket. For sponsor scannings, you must scan their badge, not the ticket");
-            } else {
-                ScanCompletedDialog("Unknown code scanned",
-                        "You have scanned a code is not recognized by this system");
-            }
+        Pattern tokenRe = null;
+        try {
+            tokenRe = currentConference.getTokenRegexp();
+        } catch (MalformedURLException e) {
+            /* Should never happen since it's already been validated, so just return if it does */
+            return;
         }
 
+        Matcher tokenMatcher = tokenRe.matcher(qrstring);
+        if (tokenMatcher.matches()) {
+            if (tokenMatcher.group(2).equals("TESTTESTTESTTEST")) {
+                ScanCompletedDialog("Test code scanned", String.format("You hace successfully scanned the test code for %s!", tokenMatcher.group(1).equals("id") ? "ticket" : "badge"));
+            }
+            else {
+                /* Not a test code, so a real one then */
+                if (tokenMatcher.group(1).equals("id")) {
+                    /* Id code */
+                    if (currentConference.ischeckin) {
+                        new aHandleScannedCode(qrstring).execute();
+                    }
+                    else {
+                        ScanCompletedDialog("Ticket scanned",
+                                "You have scanned a ticket. For sponsor scannings, you must scan their badge, not the ticket");
+                    }
+                }
+                else {
+                    /* Badge code */
+                    if (currentConference.ischeckin) {
+                        ScanCompletedDialog("Attendee badge scanned",
+                                "You have scanned an attendee badge. For checking an attendee in, you must scan their ticket, not the badge.");
+                    }
+                    else {
+                        new aHandleScannedCode(qrstring).execute();
+                    }
+                }
+            }
+        }
+        else {
+            /* Legacy style code or not a code at all */
+            if (currentConference.ischeckin) {
+                if (qrstring.equals(testCheckin)) {
+                    ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for tickets!");
+                } else if (qrstring.equals(testBadge)) {
+                    ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for badges!");
+                } else if (qrstring.startsWith("ID$") && qrstring.endsWith("$ID")) {
+                    new aHandleScannedCode(qrstring).execute();
+                } else if (qrstring.startsWith("AT$") && qrstring.endsWith("$AT")) {
+                    ScanCompletedDialog("Attendee badge scanned",
+                            "You have scanned an attendee badge. For checking an attendee in, you must scan their ticket, not the badge.");
+                } else {
+                    ScanCompletedDialog("Unknown code scanned",
+                            "You have scanned a code is not recognized by this system");
+                }
+            } else {
+                if (qrstring.equals(testCheckin)) {
+                    ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for tickets!");
+                } else if (qrstring.equals(testBadge)) {
+                    ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for badges!");
+                } else if (qrstring.startsWith("AT$") && qrstring.endsWith("$AT")) {
+                    new aHandleScannedCode(qrstring).execute();
+                } else if (qrstring.startsWith("ID$") && qrstring.endsWith("$ID")) {
+                    ScanCompletedDialog("Ticket scanned",
+                            "You have scanned a ticket. For sponsor scannings, you must scan their badge, not the ticket");
+                } else {
+                    ScanCompletedDialog("Unknown code scanned",
+                            "You have scanned a code is not recognized by this system");
+                }
+            }
+        }
     }
 
     private class aDoCheckin extends AsyncTask<Void, Void, JSONObject> {
