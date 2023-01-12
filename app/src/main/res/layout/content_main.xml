@@ -21,7 +21,7 @@
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp" />
 
-    <TextureView
+    <androidx.camera.view.PreviewView
         android:id="@+id/view_finder"
         android:layout_marginLeft="16dp"
         android:layout_marginRight="16dp"

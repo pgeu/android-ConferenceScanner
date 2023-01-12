@@ -10,16 +10,15 @@ import android.os.Handler;
 import android.text.InputType;
 import android.util.Log;
 import android.view.SubMenu;
-import android.view.TextureView;
 import android.view.View;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
-import androidx.camera.core.CameraX;
+import androidx.camera.core.CameraSelector;
 import androidx.camera.core.ImageAnalysis;
-import androidx.camera.core.ImageAnalysisConfig;
 import androidx.camera.core.Preview;
-import androidx.camera.core.PreviewConfig;
+import androidx.camera.lifecycle.ProcessCameraProvider;
+import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
 import androidx.core.view.GravityCompat;
@@ -28,6 +27,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.common.util.concurrent.ListenableFuture;
 
 import androidx.drawerlayout.widget.DrawerLayout;
 
@@ -35,7 +35,6 @@ import androidx.appcompat.app.AppCompatActivity;
 import androidx.appcompat.widget.Toolbar;
 
 import android.view.Menu;
-import android.view.ViewGroup;
 import android.widget.Button;
 import android.widget.EditText;
 import android.widget.ProgressBar;
@@ -48,6 +47,7 @@ import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.concurrent.ExecutionException;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -66,7 +66,7 @@ public class MainActivity extends AppCompatActivity
     private ProgressBar progressBar;
     private NavigationView navigationView;
     private TextView txtintro;
-    private TextureView viewfinder;
+    private PreviewView viewfinder;
     private Button scanbutton;
     private Button searchbutton;
     private boolean cameraActive = false;
@@ -335,7 +335,13 @@ public class MainActivity extends AppCompatActivity
         if (!cameraActive)
             return;
 
-        CameraX.unbindAll();
+        try {
+            ProcessCameraProvider.getInstance(this).get().unbindAll();
+        } catch (ExecutionException e) {
+            Log.e("conferencescanner", "Unable to unbind");
+        } catch (InterruptedException e) {
+            Log.e("conferencescanner", "Interrupted in unbind");
+        }
         cameraActive = false;
         scanbutton.setText("Start camera");
         viewfinder.setVisibility(View.INVISIBLE);
@@ -350,27 +356,37 @@ public class MainActivity extends AppCompatActivity
         cameraActive = true;
         scanbutton.setText("Stop camera");
 
-        PreviewConfig config = (new PreviewConfig.Builder())
-                .setLensFacing(CameraX.LensFacing.BACK)
-                .build();
-        Preview preview = new Preview(config);
+        ListenableFuture<ProcessCameraProvider> cameraProviderFuture = ProcessCameraProvider.getInstance(this);
+        cameraProviderFuture.addListener(new Runnable() {
+                                             @Override
+                                             public void run() {
+                                                 ProcessCameraProvider cameraProvider = null;
+                                                 try {
+                                                     cameraProvider = cameraProviderFuture.get();
+                                                 } catch (ExecutionException e) {
+                                                     return;
+                                                 } catch (InterruptedException e) {
+                                                     return;
+                                                 }
 
-        viewfinder.setVisibility(View.VISIBLE);
+                                                 Preview preview = new Preview.Builder().build();
+                                                 preview.setSurfaceProvider(viewfinder.getSurfaceProvider());
 
-        preview.setOnPreviewOutputUpdateListener(output -> {
-            ViewGroup parent = (ViewGroup) viewfinder.getParent();
-            parent.removeView(viewfinder);
-            parent.addView(viewfinder, 0);
-            viewfinder.setSurfaceTexture(output.getSurfaceTexture());
+                                                 viewfinder.setVisibility(View.VISIBLE);
 
-        });
+                                                 ImageAnalysis analysis = new ImageAnalysis.Builder()
+                                                         .setBackpressureStrategy(ImageAnalysis.STRATEGY_KEEP_ONLY_LATEST)
+                                                         .build();
+                                                 analysis.setAnalyzer(ContextCompat.getMainExecutor(MainActivity.this), new QRAnalyzer(MainActivity.this));
 
-        ImageAnalysisConfig analysisConfig = (new ImageAnalysisConfig.Builder()).build();
-        ImageAnalysis analysis = new ImageAnalysis(analysisConfig);
-        analysis.setAnalyzer(ContextCompat.getMainExecutor(this), new QRAnalyzer(this));
+                                                 CameraSelector cameraSelector = CameraSelector.DEFAULT_BACK_CAMERA;
+                                                 cameraProvider.unbindAll();
+                                                 cameraProvider.bindToLifecycle(MainActivity.this, cameraSelector, preview, analysis);
+                                             }
+                                         },
+                                        ContextCompat.getMainExecutor(this)
+                                    );
 
-        CameraX.bindToLifecycle(this, preview);
-        CameraX.bindToLifecycle(this, analysis);
     }
 
     @Override
