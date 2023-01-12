@@ -2,13 +2,13 @@ apply plugin: 'com.android.application'
 apply plugin: 'com.google.gms.google-services'
 
 android {
-    compileSdkVersion 30
+    compileSdkVersion 31
     defaultConfig {
         applicationId "eu.postgresql.android.conferencescanner"
         minSdkVersion 23
-        targetSdkVersion 30
-        versionCode 12
-        versionName "1.1.6"
+        targetSdkVersion 31
+        versionCode 102000
+        versionName "1.2.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
