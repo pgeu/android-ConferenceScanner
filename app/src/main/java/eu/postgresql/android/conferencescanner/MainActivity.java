@@ -407,7 +407,7 @@ public class MainActivity extends AppCompatActivity
         if (id == R.id.itemAdd) {
             final EditText input = new EditText(this);
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
-            input.setHint("https://test.com/events/test/checking/abc123def456/");
+            input.setHint("https://test.com/events/test/checkin/abc123def456/");
 
             new AlertDialog.Builder(this)
                     .setTitle("Enter URL")
