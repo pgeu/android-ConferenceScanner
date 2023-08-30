@@ -84,6 +84,8 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
             params.add(new CheckinParam("Registration type", reg.getString("type")));
             if (reg.has("photoconsent"))
                 params.add(new CheckinParam("Photo consent", reg.getString("photoconsent")));
+            if (reg.has("policyconfirmed"))
+                params.add(new CheckinParam("Policy confirmed", reg.getString("policyconfirmed")));
             if (reg.has("tshirt") && !reg.isNull("tshirt"))
                 params.add(new CheckinParam("T-Shirt size", reg.getString("tshirt")));
             if (reg.has("company") && !reg.isNull("company") && !reg.getString("company").isEmpty())

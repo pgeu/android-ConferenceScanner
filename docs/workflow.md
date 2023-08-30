@@ -137,6 +137,9 @@ this object are:
 * photoconsent
    String about photo consent (yes or no), if any
 
+* policyconfirmed
+   String about conference policy confirmed (date and time), if anyF
+
 * additional
    An array with a list of additional options for this attendee
 
