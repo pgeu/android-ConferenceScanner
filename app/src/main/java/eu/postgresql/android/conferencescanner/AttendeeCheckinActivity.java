@@ -5,6 +5,7 @@ import androidx.appcompat.app.AppCompatActivity;
 
 import android.content.Context;
 import android.content.Intent;
+import android.graphics.Color;
 import android.os.Bundle;
 import android.util.Log;
 import android.view.LayoutInflater;
@@ -33,10 +34,18 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
     private class CheckinParam {
         final String name;
         final String value;
+        final boolean alertonnot;
 
         private CheckinParam(String name, String value) {
             this.name = name;
             this.value = value;
+            this.alertonnot = false;
+        }
+
+        private CheckinParam(String name, String value, boolean alertonnot) {
+            this.name = name;
+            this.value = value;
+            this.alertonnot = alertonnot;
         }
     }
 
@@ -84,9 +93,9 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
             params.add(new CheckinParam("Name", reg.getString("name")));
             params.add(new CheckinParam("Registration type", reg.getString("type")));
             if (reg.has("photoconsent"))
-                params.add(new CheckinParam("Photo consent", reg.getString("photoconsent")));
+                params.add(new CheckinParam("Photo consent", reg.getString("photoconsent"), true));
             if (reg.has("policyconfirmed"))
-                params.add(new CheckinParam("Policy confirmed", reg.getString("policyconfirmed")));
+                params.add(new CheckinParam("Policy confirmed", reg.getString("policyconfirmed"), true));
             if (reg.has("tshirt") && !reg.isNull("tshirt"))
                 params.add(new CheckinParam("T-Shirt size", reg.getString("tshirt")));
             if (reg.has("company") && !reg.isNull("company") && !reg.getString("company").isEmpty())
@@ -208,8 +217,14 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
             TextView fieldval = convertView.findViewById(R.id.txt_fieldval);
             if (p.value == null)
                 fieldval.setText("");
-            else
+            else {
                 fieldval.setText(p.value);
+                if (p.alertonnot && p.value.contains(" NOT ")) {
+                    fieldval.setBackgroundColor(Color.RED);
+                } else {
+                    fieldval.setBackgroundColor(Color.TRANSPARENT);
+                }
+            }
 
             return convertView;
         }
