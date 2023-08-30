@@ -6,6 +6,7 @@ import androidx.appcompat.app.AppCompatActivity;
 import android.content.Context;
 import android.content.Intent;
 import android.os.Bundle;
+import android.util.Log;
 import android.view.LayoutInflater;
 import android.view.MenuItem;
 import android.view.View;
@@ -113,6 +114,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
             }
 
         } catch (JSONException e) {
+            Log.w("conferencescanner", String.format("Faield to parse returned JSON: %s", e.toString()));
             FinishWithError("Failed to parse returned JSON");
             return;
         }
@@ -155,6 +157,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
 
             editNotes.setText(reg.getString("note"));
         } catch (JSONException e) {
+            Log.w("conferencescanner", String.format("Faield to parse returned JSON: %s", e.toString()));
             FinishWithError("Failed to parse returned JSON");
             return;
         }
