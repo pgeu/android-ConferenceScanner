@@ -75,7 +75,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
         });
 
         params = new ArrayList<>();
-        if (getIntent().hasExtra("reg")) {
+        if (getIntent().getBooleanExtra("ischeckin", true)) {
             SetupForCheckin();
         } else {
             SetupForSponsor();
@@ -145,7 +145,8 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
             btnCheckin.setText("Check in!");
             btnCheckin.setOnClickListener(view -> {
                 Intent i = new Intent();
-                i.putExtra("regid", regid);
+                i.putExtra("token", getIntent().getStringExtra("token"));
+                i.putExtra("ischeckin", 1);
                 setResult(RESULT_OK, i);
                 finish();
             });
@@ -157,7 +158,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
 
     private void SetupForSponsor() {
         try {
-            reg = new JSONObject(getIntent().getStringExtra("spons"));
+            reg = new JSONObject(getIntent().getStringExtra("reg"));
 
             params.add(new CheckinParam("Name", reg.getString("name")));
             params.add(new CheckinParam("Company", reg.getString("company")));

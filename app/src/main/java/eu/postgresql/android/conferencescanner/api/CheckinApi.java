@@ -54,10 +54,10 @@ public class CheckinApi extends ApiBase {
         return true;
     }
 
-    public JSONObject PerformCheckin(int id) {
+    public JSONObject PerformCheckin(String token) {
         HashMap<String, String> params = new HashMap<>();
-        params.put("reg", String.format("%d", id));
-        return ApiPostForJSONObject("api/checkin/", params);
+        params.put("token", token);
+        return ApiPostForJSONObject("api/store/", params);
     }
 
     public JSONArray GetStatistics() {

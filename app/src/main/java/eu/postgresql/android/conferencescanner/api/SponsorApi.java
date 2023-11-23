@@ -14,12 +14,12 @@ public class SponsorApi extends ApiBase {
 
     @Override
     public String GetConferenceName() {
-        JSONObject status = ApiGetJSONObject("api/?status=1");
+        JSONObject status = ApiGetJSONObject("api/status/");
         if (status == null)
             return null;
 
         try {
-            return status.getString("confname");
+            return String.format("%s for %s", status.getString("confname"), status.getString("sponsorname"));
         } catch (JSONException e) {
             lasterror = "Could not parse JSON contents";
             return null;
@@ -38,14 +38,14 @@ public class SponsorApi extends ApiBase {
 
     @Override
     public JSONObject Lookup(String qrcode) {
-        return ApiGetJSONObject(String.format("api/?token=%s", urlencode(qrcode)));
+        return ApiGetJSONObject(String.format("api/lookup/?lookup=%s", urlencode(qrcode)));
     }
 
     public boolean StoreScan(String token, String note) {
         HashMap<String, String> params = new HashMap<>();
         params.put("token", token);
         params.put("note", note);
-        JSONObject store = ApiPostForJSONObject("api/", params);
+        JSONObject store = ApiPostForJSONObject("api/store/", params);
         return (store != null);
     }
 }

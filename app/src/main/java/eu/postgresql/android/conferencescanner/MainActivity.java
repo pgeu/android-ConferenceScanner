@@ -461,7 +461,7 @@ public class MainActivity extends AppCompatActivity
             }
         } else if (requestCode == INTENT_RESULT_CHECKED_IN) {
             if (resultCode == RESULT_OK) {
-                if (data.hasExtra("regid"))
+                if (data.hasExtra("ischeckin"))
                     CompleteAttendeeCheckin(data);
                 else
                     CompleteBadgeScan(data);
@@ -668,13 +668,10 @@ public class MainActivity extends AppCompatActivity
             try {
                 Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
                 intent.putExtra("token", qrstring);
-                if (currentConference.ischeckin) {
-                    JSONObject reg = data.getJSONObject("reg");
+                intent.putExtra("ischeckin", currentConference.ischeckin);
 
-                    intent.putExtra("reg", reg.toString());
-                } else {
-                    intent.putExtra("spons", data.toString());
-                }
+                JSONObject reg = data.getJSONObject("reg");
+                intent.putExtra("reg", reg.toString());
 
                 startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
             } catch (JSONException e) {
@@ -768,10 +765,10 @@ public class MainActivity extends AppCompatActivity
 
     private class aDoCheckin extends AsyncTask<Void, Void, JSONObject> {
         private final CheckinApi api;
-        private final int regid;
+        private final String token;
 
-        private aDoCheckin(int regid) {
-            this.regid = regid;
+        private aDoCheckin(String token) {
+            this.token = token;
             api = (CheckinApi) currentConference.getApi(MainActivity.this);
         }
 
@@ -782,7 +779,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected JSONObject doInBackground(Void... voids) {
-            return api.PerformCheckin(regid);
+            return api.PerformCheckin(token);
         }
 
         @Override
@@ -822,7 +819,7 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        new aDoCheckin(data.getIntExtra("regid", -1)).execute();
+        new aDoCheckin(data.getStringExtra("token")).execute();
     }
 
     private class DoSearchAttendee extends AsyncTask<Void, Void, JSONObject> {
