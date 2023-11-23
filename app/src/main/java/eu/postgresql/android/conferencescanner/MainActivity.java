@@ -493,6 +493,7 @@ public class MainActivity extends AppCompatActivity
                 new DoAddConference(new SponsorApi(this, cleanurl)).execute();
             }
         } else {
+            Log.w("conferencescanner", String.format("Unmatched URL: %s", cleanurl));
             ErrorBox("Invalid URL", "URL does not look like a check-in or sponsor URL");
         }
     }
