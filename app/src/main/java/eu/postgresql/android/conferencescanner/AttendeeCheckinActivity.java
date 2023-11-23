@@ -123,7 +123,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
             }
 
         } catch (JSONException e) {
-            Log.w("conferencescanner", String.format("Faield to parse returned JSON: %s", e.toString()));
+            Log.w("conferencescanner", String.format("Failed to parse returned JSON for checkin: %s", e.toString()));
             FinishWithError("Failed to parse returned JSON");
             return;
         }
@@ -167,7 +167,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
 
             editNotes.setText(reg.getString("note"));
         } catch (JSONException e) {
-            Log.w("conferencescanner", String.format("Faield to parse returned JSON: %s", e.toString()));
+            Log.w("conferencescanner", String.format("Failed to parse returned JSON for sponsor: %s", e.toString()));
             FinishWithError("Failed to parse returned JSON");
             return;
         }
