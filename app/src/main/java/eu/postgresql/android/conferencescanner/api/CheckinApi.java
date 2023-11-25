@@ -54,6 +54,21 @@ public class CheckinApi extends ApiBase {
         return true;
     }
 
+    @Override
+    public boolean CanSearch() {
+        return true;
+    }
+
+    @Override
+    public String getIntroText(boolean open, String confname) {
+        if (open) {
+            return String.format("Ready to check attendees in to %s!\n\nTo scan an attendee, turn on the camera below and focus it on the QR code on the ticket!", confname);
+        }
+        else {
+            return "Check-in processing is not currently open for this conference.";
+        }
+    }
+
     public JSONObject PerformCheckin(String token) {
         HashMap<String, String> params = new HashMap<>();
         params.put("token", token);

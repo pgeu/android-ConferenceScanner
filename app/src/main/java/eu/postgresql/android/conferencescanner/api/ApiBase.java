@@ -58,6 +58,10 @@ public abstract class ApiBase {
 
     public abstract JSONObject Lookup(String qrcode);
 
+    public abstract boolean CanSearch();
+
+    public abstract String getIntroText(boolean open, String confname);
+
     protected JSONObject ApiGetJSONObject(String suburl) {
         try {
             String s = ApiGetString(suburl);

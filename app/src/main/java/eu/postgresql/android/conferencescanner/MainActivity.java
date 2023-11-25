@@ -293,24 +293,12 @@ public class MainActivity extends AppCompatActivity
             } else {
                 viewfinder.setVisibility(View.INVISIBLE);
                 scanbutton.setVisibility(View.VISIBLE);
+                searchbutton.setVisibility(api.CanSearch() ? View.VISIBLE : View.GONE);
+                searchbutton.setEnabled(data.open);
+                txtintro.setText(api.getIntroText(data.open, currentConference.confname));
                 if (currentConference.ischeckin) {
-                    searchbutton.setVisibility(View.VISIBLE);
-                    if (data.open) {
-                        txtintro.setText(String.format("Ready to check attendees in to %s!\n\nTo scan an attendee, turn on the camera below and focus it on the QR code on the ticket!", currentConference.confname));
-                        searchbutton.setEnabled(true);
-                    } else {
-                        txtintro.setText("Check-in processing is not currently open for this conference.");
-                        searchbutton.setEnabled(false);
-                    }
                     if (optionsMenu != null) {
                         optionsMenu.findItem(R.id.action_statistics).setEnabled(data.admin);
-                    }
-                } else {
-                    searchbutton.setVisibility(View.GONE);
-                    if (data.open) {
-                        txtintro.setText(String.format("Welcome as a sponsor scanner for %s.\n\nTo scan an attendee badge, turn on the camera below and focus it on the QR code on the attendee badge. Once a QR code is detected, the system will proceed automatically.", currentConference.confname));
-                    } else {
-                        txtintro.setText("Badge scanning is not currently open for this conference .");
                     }
                 }
             }

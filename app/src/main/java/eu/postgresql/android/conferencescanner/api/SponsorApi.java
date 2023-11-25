@@ -37,6 +37,21 @@ public class SponsorApi extends ApiBase {
     }
 
     @Override
+    public boolean CanSearch() {
+        return false;
+    }
+
+    @Override
+    public String getIntroText(boolean open, String confname) {
+        if (open) {
+            return String.format("Welcome as a sponsor scanner for %s.\n\nTo scan an attendee badge, turn on the camera below and focus it on the QR code on the attendee badge. Once a QR code is detected, the system will proceed automatically.", confname);
+        }
+        else {
+            return "Badge scanning is not currently open for this conference .";
+        }
+    }
+
+    @Override
     public JSONObject Lookup(String qrcode) {
         return ApiGetJSONObject(String.format("api/lookup/?lookup=%s", urlencode(qrcode)));
     }
