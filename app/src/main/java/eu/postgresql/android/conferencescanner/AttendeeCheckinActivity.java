@@ -87,22 +87,29 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
         lvCheckin.setAdapter(new CheckinAdapter(this, params));
     }
 
+
+    private void AddParamIfPresent(JSONObject reg, String name, String title, boolean alertonnot)  throws JSONException {
+        if (reg.has(name) && !reg.isNull(name) && !reg.getString(name).isEmpty()) {
+            params.add(new CheckinParam(title, reg.getString(name), alertonnot));
+        }
+    }
+
+    private void AddParamIfPresent(JSONObject reg, String name, String title) throws JSONException {
+        AddParamIfPresent(reg, name, title, false);
+    }
+
     private void SetupForCheckin() {
         try {
             reg = new JSONObject(getIntent().getStringExtra("reg"));
 
-            params.add(new CheckinParam("Name", reg.getString("name")));
-            params.add(new CheckinParam("Registration type", reg.getString("type")));
-            if (reg.has("photoconsent"))
-                params.add(new CheckinParam("Photo consent", reg.getString("photoconsent"), true));
-            if (reg.has("policyconfirmed"))
-                params.add(new CheckinParam("Policy confirmed", reg.getString("policyconfirmed"), true));
-            if (reg.has("tshirt") && !reg.isNull("tshirt"))
-                params.add(new CheckinParam("T-Shirt size", reg.getString("tshirt")));
-            if (reg.has("company") && !reg.isNull("company") && !reg.getString("company").isEmpty())
-                params.add(new CheckinParam("Company", reg.getString("company")));
-            if (reg.has("partition"))
-                params.add(new CheckinParam("Queue Partition", reg.getString("partition")));
+            AddParamIfPresent(reg, "name", "Name");
+            AddParamIfPresent(reg, "type", "Registration type");
+            AddParamIfPresent(reg, "photoconsent", "Photo consent", true);
+            AddParamIfPresent(reg, "policyconfirmed", "Policy confirmed", true);
+            AddParamIfPresent(reg, "tshirt", "T-Shirt size");
+            AddParamIfPresent(reg, "company", "Company");
+            AddParamIfPresent(reg, "partition", "Queue Partition");
+
             if (reg.has("additional")) {
                 JSONArray additional = reg.getJSONArray("additional");
                 if (additional.length() > 0) {
@@ -160,10 +167,10 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
         try {
             reg = new JSONObject(getIntent().getStringExtra("reg"));
 
-            params.add(new CheckinParam("Name", reg.getString("name")));
-            params.add(new CheckinParam("Company", reg.getString("company")));
-            params.add(new CheckinParam("Country", reg.getString("country")));
-            params.add(new CheckinParam("E-mail", reg.getString("email")));
+            AddParamIfPresent(reg, "name", "Name");
+            AddParamIfPresent(reg, "company", "Company");
+            AddParamIfPresent(reg, "country", "Country");
+            AddParamIfPresent(reg, "email", "E-mail");
 
             editNotes.setText(reg.getString("note"));
         } catch (JSONException e) {
