@@ -7,6 +7,8 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
+import eu.postgresql.android.conferencescanner.ScanType;
+
 public class SponsorApi extends ApiBase {
     public SponsorApi(Context ctx, String baseurl) {
         super(ctx, baseurl);
@@ -32,8 +34,8 @@ public class SponsorApi extends ApiBase {
     }
 
     @Override
-    public boolean IsCheckin() {
-        return false;
+    public ScanType GetScanType() {
+        return ScanType.SPONSORBADGE;
     }
 
     @Override

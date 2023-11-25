@@ -3,10 +3,13 @@ package eu.postgresql.android.conferencescanner.params;
 import android.content.Context;
 import android.content.SharedPreferences;
 
+import android.util.Log;
+
 import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
+import java.util.Iterator;
 
 import static android.content.Context.MODE_PRIVATE;
 
@@ -17,9 +20,28 @@ public class ParamManager {
         if (s.isEmpty()) {
             return new ArrayList<>();
         } else {
-            Gson gson = new Gson();
-            return gson.fromJson(s, new TypeToken<ArrayList<ConferenceEntry>>() {
-            }.getType());
+            try {
+                Gson gson = new Gson();
+                ArrayList<ConferenceEntry> entries = gson.fromJson(s, new TypeToken<ArrayList<ConferenceEntry>>() {
+                    }.getType());
+
+                // Verify that all entries are actually valid and don't have NULLs where
+                // we can't deal with them.
+                Iterator<ConferenceEntry> itr = entries.iterator();
+                while (itr.hasNext()) {
+                    ConferenceEntry e = itr.next();
+                    if (e.confname == null || e.baseurl == null || e.scantype == null) {
+                        Log.w("Invalid values in conference %s, removing", e.confname);
+                        itr.remove();
+                    }
+                }
+
+                return entries;
+            }
+            catch (Exception e) {
+                Log.e("Failed to load conferences: %s", e.toString());
+                return new ArrayList<>();
+            }
         }
     }
 

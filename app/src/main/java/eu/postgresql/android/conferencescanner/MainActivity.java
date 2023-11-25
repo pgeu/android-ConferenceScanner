@@ -208,10 +208,13 @@ public class MainActivity extends AppCompatActivity
     @Override
     public boolean onCreateOptionsMenu(Menu menu) {
         if (currentConference != null) {
-            if (currentConference.ischeckin) {
+            switch (currentConference.scantype) {
+            case CHECKIN:
                 getMenuInflater().inflate(R.menu.checkin, menu);
-            } else {
+                break;
+            case SPONSORBADGE:
                 getMenuInflater().inflate(R.menu.sponsor, menu);
+                break;
             }
         }
         optionsMenu = menu;
@@ -283,7 +286,7 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(ApiBase.OpenAndAdmin data) {
             progressBar.setVisibility(View.INVISIBLE);
 
-            getSupportActionBar().setTitle(String.format("%s - %s", currentConference.confname, currentConference.ischeckin ? "checkin attendees" : "badge scanning"));
+            getSupportActionBar().setTitle(String.format("%s - %s", currentConference.confname, currentConference.getTypeString()));
             if (data == null) {
                 ErrorBox("Network error", api.LastError());
                 viewfinder.setVisibility(View.INVISIBLE);
@@ -296,10 +299,8 @@ public class MainActivity extends AppCompatActivity
                 searchbutton.setVisibility(api.CanSearch() ? View.VISIBLE : View.GONE);
                 searchbutton.setEnabled(data.open);
                 txtintro.setText(api.getIntroText(data.open, currentConference.confname));
-                if (currentConference.ischeckin) {
-                    if (optionsMenu != null) {
-                        optionsMenu.findItem(R.id.action_statistics).setEnabled(data.admin);
-                    }
+                if (currentConference.scantype == ScanType.CHECKIN && optionsMenu != null) {
+                    optionsMenu.findItem(R.id.action_statistics).setEnabled(data.admin);
                 }
             }
         }
@@ -449,12 +450,17 @@ public class MainActivity extends AppCompatActivity
             }
         } else if (requestCode == INTENT_RESULT_CHECKED_IN) {
             if (resultCode == RESULT_OK) {
-                if (data.hasExtra("ischeckin"))
+                ScanType scantype = (ScanType) data.getSerializableExtra("scantype");
+                switch (scantype) {
+                case CHECKIN:
                     CompleteAttendeeCheckin(data);
-                else
+                    break;
+                case SPONSORBADGE:
                     CompleteBadgeScan(data);
+                    break;
+                }
             } else if (resultCode == RESULT_ERROR) {
-                ScanCompletedDialog("Error checking in", data.getStringExtra("msg"));
+                ScanCompletedDialog("Error storing data", data.getStringExtra("msg"));
             } else {
                 /* Canceled */
                 pauseDetection = false;
@@ -539,7 +545,7 @@ public class MainActivity extends AppCompatActivity
             ConferenceEntry r = new ConferenceEntry();
             r.baseurl = api.baseurl;
             r.confname = confname;
-            r.ischeckin = api.IsCheckin();
+            r.scantype = api.GetScanType();
             conferences.add(0, r); // Always insert at the top of the list!
             ParamManager.SaveConferences(MainActivity.this, conferences);
 
@@ -572,10 +578,10 @@ public class MainActivity extends AppCompatActivity
         sponsorMenu.clear();
 
         for (int i = 0; i < conferences.size(); i++) {
-            if (conferences.get(i).ischeckin) {
-                checkinMenu.add(0, MENU_FIRST_CONFERENCE + i, Menu.NONE, conferences.get(i).confname).setCheckable(true);
-            } else {
+            if (conferences.get(i).scantype == ScanType.SPONSORBADGE) {
                 sponsorMenu.add(0, MENU_FIRST_CONFERENCE + i, Menu.NONE, conferences.get(i).confname).setCheckable(true);
+            } else {
+                checkinMenu.add(0, MENU_FIRST_CONFERENCE + i, Menu.NONE, conferences.get(i).confname).setCheckable(true);
             }
         }
         UpdateSelectedConference();
@@ -656,8 +662,8 @@ public class MainActivity extends AppCompatActivity
 
             try {
                 Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
+                intent.putExtra("scantype", currentConference.scantype);
                 intent.putExtra("token", qrstring);
-                intent.putExtra("ischeckin", currentConference.ischeckin);
 
                 JSONObject reg = data.getJSONObject("reg");
                 intent.putExtra("reg", reg.toString());
@@ -692,64 +698,30 @@ public class MainActivity extends AppCompatActivity
         Matcher tokenMatcher = tokenRe.matcher(qrstring);
         if (tokenMatcher.matches()) {
             if (tokenMatcher.group(2).equals("TESTTESTTESTTEST")) {
-                ScanCompletedDialog("Test code scanned", String.format("You hace successfully scanned the test code for %s!", tokenMatcher.group(1).equals("id") ? "ticket" : "badge"));
+                ScanCompletedDialog("Test code scanned", String.format("You hace successfully scanned a test code!"));
             }
             else {
                 /* Not a test code, so a real one then */
-                if (tokenMatcher.group(1).equals("id")) {
-                    /* Id code */
-                    if (currentConference.ischeckin) {
-                        new aHandleScannedCode(qrstring).execute();
-                    }
-                    else {
-                        ScanCompletedDialog("Ticket scanned",
-                                "You have scanned a ticket. For sponsor scannings, you must scan their badge, not the ticket");
-                    }
+                String tokentype = tokenMatcher.group(1);
+                if (tokentype.equals(currentConference.expectedTokenType())) {
+                    new aHandleScannedCode(qrstring).execute();
                 }
                 else {
-                    /* Badge code */
-                    if (currentConference.ischeckin) {
-                        ScanCompletedDialog("Attendee badge scanned",
-                                "You have scanned an attendee badge. For checking an attendee in, you must scan their ticket, not the badge.");
-                    }
-                    else {
-                        new aHandleScannedCode(qrstring).execute();
-                    }
+                    ScanCompletedDialog(String.format("%s scanned", TokenType.tokenIsFrom(tokentype)),
+                                        String.format("You have scanned a %s. For %s, you must scan the %s, not the %s.",
+                                                      TokenType.tokenIsFrom(tokentype),
+                                                      currentConference.getTypeString().toLowerCase(),
+                                                      TokenType.tokenIsFrom(currentConference.expectedTokenType()),
+                                                      TokenType.tokenIsFrom(tokentype)
+                                                      ));
                 }
             }
         }
         else {
-            /* Legacy style code or not a code at all */
-            if (currentConference.ischeckin) {
-                if (qrstring.equals(testCheckin)) {
-                    ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for tickets!");
-                } else if (qrstring.equals(testBadge)) {
-                    ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for badges!");
-                } else if (qrstring.startsWith("ID$") && qrstring.endsWith("$ID")) {
-                    new aHandleScannedCode(qrstring).execute();
-                } else if (qrstring.startsWith("AT$") && qrstring.endsWith("$AT")) {
-                    ScanCompletedDialog("Attendee badge scanned",
-                            "You have scanned an attendee badge. For checking an attendee in, you must scan their ticket, not the badge.");
-                } else {
-                    ScanCompletedDialog("Unknown code scanned",
-                            "You have scanned a code is not recognized by this system");
-                }
-            } else {
-                if (qrstring.equals(testCheckin)) {
-                    ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for tickets!");
-                } else if (qrstring.equals(testBadge)) {
-                    ScanCompletedDialog("Test code scanned", "You have successfully scanned the test code for badges!");
-                } else if (qrstring.startsWith("AT$") && qrstring.endsWith("$AT")) {
-                    new aHandleScannedCode(qrstring).execute();
-                } else if (qrstring.startsWith("ID$") && qrstring.endsWith("$ID")) {
-                    ScanCompletedDialog("Ticket scanned",
-                            "You have scanned a ticket. For sponsor scannings, you must scan their badge, not the ticket");
-                } else {
-                    ScanCompletedDialog("Unknown code scanned",
-                            "You have scanned a code is not recognized by this system");
-                }
-            }
+            ScanCompletedDialog("Unknown code scanned",
+                                "You have scanned a code is not recognized by this system");
         }
+
     }
 
     private class aDoCheckin extends AsyncTask<Void, Void, JSONObject> {
@@ -782,6 +754,7 @@ public class MainActivity extends AppCompatActivity
                     JSONObject reg = data.getJSONObject("reg");
 
                     Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
+                    intent.putExtra("scantype", currentConference.scantype);
                     intent.putExtra("reg", reg.toString());
                     intent.putExtra("completed", true);
                     startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
@@ -850,6 +823,8 @@ public class MainActivity extends AppCompatActivity
                     ErrorBox("No attendees found", "No attendees matching search found.");
                 } else if (regs.length() == 1) {
                     Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
+                    intent.putExtra("scantype", currentConference.scantype);
+                    intent.putExtra("token", regs.getJSONObject(0).getString("token"));
                     intent.putExtra("reg", regs.getJSONObject(0).toString());
                     startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
                 } else {
@@ -864,6 +839,8 @@ public class MainActivity extends AppCompatActivity
                             .setItems(regnames, (dialogInterface, i) -> {
                                 try {
                                     Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
+                                    intent.putExtra("scantype", currentConference.scantype);
+                                    intent.putExtra("token", regs.getJSONObject(i).getString("token"));
                                     intent.putExtra("reg", regs.getJSONObject(i).toString());
                                     startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
                                 }

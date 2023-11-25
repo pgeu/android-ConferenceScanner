@@ -8,6 +8,8 @@ import org.json.JSONObject;
 
 import java.util.HashMap;
 
+import eu.postgresql.android.conferencescanner.ScanType;
+
 public class CheckinApi extends ApiBase {
     public CheckinApi(Context ctx, String baseurl) {
         super(ctx, baseurl);
@@ -50,8 +52,8 @@ public class CheckinApi extends ApiBase {
     }
 
     @Override
-    public boolean IsCheckin() {
-        return true;
+    public ScanType GetScanType() {
+        return ScanType.CHECKIN;
     }
 
     @Override

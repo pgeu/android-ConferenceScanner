@@ -108,7 +108,7 @@ public class ListConferencesActivity extends AppCompatActivity {
             confname.setText(r.confname);
 
             TextView conftype = convertView.findViewById(R.id.txt_conftype);
-            conftype.setText(r.ischeckin ? "Check-in processing" : "Attendee badge scanning");
+            conftype.setText(r.getTypeString());
 
             CheckBox selectcb = convertView.findViewById(R.id.cb_check);
             selectcb.setChecked(r.selected);

@@ -22,6 +22,8 @@ import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import eu.postgresql.android.conferencescanner.ScanType;
+
 @SuppressWarnings("WeakerAccess")
 public abstract class ApiBase {
     private final Context ctx;
@@ -54,7 +56,8 @@ public abstract class ApiBase {
 
     public abstract OpenAndAdmin GetIsOpenAndAdmin();
 
-    public abstract boolean IsCheckin();
+    public abstract ScanType GetScanType();
+
 
     public abstract JSONObject Lookup(String qrcode);
 

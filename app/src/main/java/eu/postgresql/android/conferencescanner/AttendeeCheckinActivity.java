@@ -29,7 +29,6 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
 
     private JSONObject reg;
     private boolean alreadyCheckedIn = false;
-    private int regid;
 
     private class CheckinParam {
         final String name;
@@ -75,10 +74,14 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
         });
 
         params = new ArrayList<>();
-        if (getIntent().getBooleanExtra("ischeckin", true)) {
+        ScanType scantype = (ScanType) getIntent().getSerializableExtra("scantype");
+        switch (scantype) {
+        case CHECKIN:
             SetupForCheckin();
-        } else {
+            break;
+        case SPONSORBADGE:
             SetupForSponsor();
+            break;
         }
 
         lvCheckin.setAdapter(new CheckinAdapter(this, params));
@@ -87,8 +90,6 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
     private void SetupForCheckin() {
         try {
             reg = new JSONObject(getIntent().getStringExtra("reg"));
-
-            regid = reg.getInt("id");
 
             params.add(new CheckinParam("Name", reg.getString("name")));
             params.add(new CheckinParam("Registration type", reg.getString("type")));
@@ -115,11 +116,10 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
                 }
             }
 
-            if (reg.has("checkedin")) {
-                JSONObject ci = reg.getJSONObject("checkedin");
+            if (reg.has("already")) {
+                JSONObject ci = reg.getJSONObject("already");
                 alreadyCheckedIn = true;
-                params.add(new CheckinParam("Checked in by", ci.getString("by")));
-                params.add(new CheckinParam("Checked in at", ci.getString("at")));
+                params.add(new CheckinParam(ci.getString("title"), ci.getString("body")));
             }
 
         } catch (JSONException e) {
@@ -146,7 +146,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
             btnCheckin.setOnClickListener(view -> {
                 Intent i = new Intent();
                 i.putExtra("token", getIntent().getStringExtra("token"));
-                i.putExtra("ischeckin", 1);
+                i.putExtra("scantype", ScanType.CHECKIN);
                 setResult(RESULT_OK, i);
                 finish();
             });
@@ -180,6 +180,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
             Intent i = new Intent();
             i.putExtra("token", getIntent().getStringExtra("token"));
             i.putExtra("note", editNotes.getText().toString());
+            i.putExtra("scantype", ScanType.SPONSORBADGE);
             setResult(RESULT_OK, i);
             finish();
         });
