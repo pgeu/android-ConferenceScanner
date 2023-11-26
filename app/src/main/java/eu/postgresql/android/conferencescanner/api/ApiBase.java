@@ -53,7 +53,26 @@ public abstract class ApiBase {
         return new String(this.lastdata, StandardCharsets.UTF_8);
     }
 
-    public abstract String GetConferenceName();
+    protected JSONObject _status = null;
+    protected void RefreshStatus() {
+        if (_status == null)
+            _status = ApiGetJSONObject("api/status/");
+    }
+
+    public abstract String FormatConferenceName(JSONObject status) throws JSONException;
+    public String GetConferenceName() {
+        RefreshStatus();
+
+        if (_status == null)
+            return null;
+
+        try {
+            return FormatConferenceName(_status);
+        } catch (JSONException e) {
+            lasterror = "Could not parse JSON contents";
+            return null;
+        }
+    }
 
     public abstract ScanType GetScanType();
 

@@ -16,17 +16,8 @@ public class SponsorApi extends ApiBase {
     }
 
     @Override
-    public String GetConferenceName() {
-        JSONObject status = ApiGetJSONObject("api/status/");
-        if (status == null)
-            return null;
-
-        try {
-            return String.format("%s for %s", status.getString("confname"), status.getString("sponsorname"));
-        } catch (JSONException e) {
-            lasterror = "Could not parse JSON contents";
-            return null;
-        }
+    public String FormatConferenceName(JSONObject status) throws JSONException {
+        return String.format("%s for %s", status.getString("confname"), status.getString("sponsorname"));
     }
 
     @Override

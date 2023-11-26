@@ -17,17 +17,8 @@ public class CheckinApi extends ApiBase {
     }
 
     @Override
-    public String GetConferenceName() {
-        JSONObject status = ApiGetJSONObject("api/status/");
-        if (status == null)
-            return null;
-
-        try {
-            return status.getString("confname");
-        } catch (JSONException e) {
-            lasterror = "Could not parse JSON contents";
-            return null;
-        }
+    public String FormatConferenceName(JSONObject status) throws JSONException {
+        return status.getString("confname");
     }
 
     @Override

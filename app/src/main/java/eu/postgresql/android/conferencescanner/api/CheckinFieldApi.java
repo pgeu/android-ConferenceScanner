@@ -12,37 +12,26 @@ import eu.postgresql.android.conferencescanner.ScanType;
 import eu.postgresql.android.conferencescanner.params.ConferenceEntry;
 
 public class CheckinFieldApi extends ApiBase {
-    private String _confname = null;
-    private String _fieldname = null;
-
     public CheckinFieldApi(Context ctx, String baseurl) {
         super(ctx, baseurl);
     }
 
     @Override
-    public String GetConferenceName() {
-        if (_confname == null)
-            RefreshNames();
-        return _confname;
+    public String FormatConferenceName(JSONObject status) throws JSONException {
+        return status.getString("confname");
     }
 
     public String GetFieldName() {
-        if (_fieldname == null)
-            RefreshNames();
-        return _fieldname;
-    }
-
-    private void RefreshNames() {
-        JSONObject status = ApiGetJSONObject("api/status/");
-        if (status == null)
-            return;
+        RefreshStatus();
+        if (_status == null)
+            return null;
 
         try {
-            _confname = status.getString("confname");
-            _fieldname = status.getString("fieldname");
-        } catch (JSONException e) {
+            return _status.getString("fieldname");
+        }
+        catch (JSONException e) {
             lasterror = "Could not parse JSON contents";
-            return;
+            return null;
         }
     }
 
