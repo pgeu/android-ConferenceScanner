@@ -53,6 +53,7 @@ import java.util.regex.Pattern;
 
 import eu.postgresql.android.conferencescanner.api.ApiBase;
 import eu.postgresql.android.conferencescanner.api.CheckinApi;
+import eu.postgresql.android.conferencescanner.api.CheckinFieldApi;
 import eu.postgresql.android.conferencescanner.api.SponsorApi;
 import eu.postgresql.android.conferencescanner.params.ParamManager;
 import eu.postgresql.android.conferencescanner.params.ConferenceEntry;
@@ -215,6 +216,9 @@ public class MainActivity extends AppCompatActivity
             case SPONSORBADGE:
                 getMenuInflater().inflate(R.menu.sponsor, menu);
                 break;
+            case CHECKINFIELD:
+                getMenuInflater().inflate(R.menu.checkinfield, menu);
+                break;
             }
         }
         optionsMenu = menu;
@@ -298,7 +302,7 @@ public class MainActivity extends AppCompatActivity
                 scanbutton.setVisibility(View.VISIBLE);
                 searchbutton.setVisibility(api.CanSearch() ? View.VISIBLE : View.GONE);
                 searchbutton.setEnabled(data.open);
-                txtintro.setText(api.getIntroText(data.open, currentConference.confname));
+                txtintro.setText(api.getIntroText(data.open, currentConference));
                 if (currentConference.scantype == ScanType.CHECKIN && optionsMenu != null) {
                     optionsMenu.findItem(R.id.action_statistics).setEnabled(data.admin);
                 }
@@ -458,6 +462,9 @@ public class MainActivity extends AppCompatActivity
                 case SPONSORBADGE:
                     CompleteBadgeScan(data);
                     break;
+                case CHECKINFIELD:
+                    CompleteCheckinField(data);
+                    break;
                 }
             } else if (resultCode == RESULT_ERROR) {
                 ScanCompletedDialog("Error storing data", data.getStringExtra("msg"));
@@ -472,7 +479,7 @@ public class MainActivity extends AppCompatActivity
         return url.replaceAll("[/#]+$", "");
     }
 
-    private final Pattern urlpattern = Pattern.compile("^https?://[^/]+/events/[^/]+/(checkin|scanning)/.*");
+    private final Pattern urlpattern = Pattern.compile("^https?://[^/]+/events/[^/]+/(checkin|scanning)/[a-z0-9]+(/f([A-Za-z0-9]+))?$");
 
     private void AddNewConference(String url) {
         String cleanurl = _clean_conference_url(url);
@@ -482,8 +489,16 @@ public class MainActivity extends AppCompatActivity
         Matcher m = urlpattern.matcher(cleanurl);
         if (m.matches()) {
             if (m.group(1).equals("checkin")) {
-                new DoAddConference(new CheckinApi(this, cleanurl)).execute();
+                if (m.group(2) != null) {
+                    /* Field scanner */
+                    new DoAddConference(new CheckinFieldApi(this, cleanurl)).execute();
+                }
+                else {
+                    /* Regular check-in */
+                    new DoAddConference(new CheckinApi(this, cleanurl)).execute();
+                }
             } else if (m.group(1).equals("scanning")) {
+                /* Sponsor scanner */
                 new DoAddConference(new SponsorApi(this, cleanurl)).execute();
             }
         } else {
@@ -496,6 +511,7 @@ public class MainActivity extends AppCompatActivity
         private final ApiBase api;
         private boolean skip = false;
         private String confname = null;
+        private String fieldname = null;
 
         private DoAddConference(ApiBase api) {
             this.api = api;
@@ -526,6 +542,10 @@ public class MainActivity extends AppCompatActivity
                 return null;
 
             confname = api.GetConferenceName();
+            if (api.GetScanType() == ScanType.CHECKINFIELD) {
+                fieldname = ((CheckinFieldApi) api).GetFieldName();
+            }
+
             return null;
         }
 
@@ -546,6 +566,9 @@ public class MainActivity extends AppCompatActivity
             r.baseurl = api.baseurl;
             r.confname = confname;
             r.scantype = api.GetScanType();
+            if (r.scantype == ScanType.CHECKINFIELD) {
+                r.fieldname = fieldname;
+            }
             conferences.add(0, r); // Always insert at the top of the list!
             ParamManager.SaveConferences(MainActivity.this, conferences);
 
@@ -579,9 +602,10 @@ public class MainActivity extends AppCompatActivity
 
         for (int i = 0; i < conferences.size(); i++) {
             if (conferences.get(i).scantype == ScanType.SPONSORBADGE) {
-                sponsorMenu.add(0, MENU_FIRST_CONFERENCE + i, Menu.NONE, conferences.get(i).confname).setCheckable(true);
+                sponsorMenu.add(0, MENU_FIRST_CONFERENCE + i, Menu.NONE, conferences.get(i).GetMenuTitle()).setCheckable(true);
             } else {
-                checkinMenu.add(0, MENU_FIRST_CONFERENCE + i, Menu.NONE, conferences.get(i).confname).setCheckable(true);
+                /* Both CHECKIN and CHECKINFIELD */
+                checkinMenu.add(0, MENU_FIRST_CONFERENCE + i, Menu.NONE, conferences.get(i).GetMenuTitle()).setCheckable(true);
             }
         }
         UpdateSelectedConference();
@@ -663,6 +687,7 @@ public class MainActivity extends AppCompatActivity
             try {
                 Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
                 intent.putExtra("scantype", currentConference.scantype);
+                intent.putExtra("fieldname", currentConference.fieldname);
                 intent.putExtra("token", qrstring);
 
                 JSONObject reg = data.getJSONObject("reg");
@@ -755,6 +780,7 @@ public class MainActivity extends AppCompatActivity
 
                     Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
                     intent.putExtra("scantype", currentConference.scantype);
+                    intent.putExtra("fieldname", currentConference.fieldname);
                     intent.putExtra("reg", reg.toString());
                     intent.putExtra("completed", true);
                     startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
@@ -824,6 +850,7 @@ public class MainActivity extends AppCompatActivity
                 } else if (regs.length() == 1) {
                     Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
                     intent.putExtra("scantype", currentConference.scantype);
+                    intent.putExtra("fieldname", currentConference.fieldname);
                     intent.putExtra("token", regs.getJSONObject(0).getString("token"));
                     intent.putExtra("reg", regs.getJSONObject(0).toString());
                     startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
@@ -840,6 +867,7 @@ public class MainActivity extends AppCompatActivity
                                 try {
                                     Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
                                     intent.putExtra("scantype", currentConference.scantype);
+                                    intent.putExtra("fieldname", currentConference.fieldname);
                                     intent.putExtra("token", regs.getJSONObject(i).getString("token"));
                                     intent.putExtra("reg", regs.getJSONObject(i).toString());
                                     startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
@@ -924,4 +952,53 @@ public class MainActivity extends AppCompatActivity
 
         new aDoSponsorScan(data.getStringExtra("token"), data.getStringExtra("note")).execute();
     }
+
+    private class aDoCheckinField extends AsyncTask<Void, Void, Boolean> {
+        private final CheckinFieldApi api;
+        private final String token;
+        private final String fieldname;
+
+        private aDoCheckinField(String token, String fieldname) {
+            this.token = token;
+            this.fieldname = fieldname;
+            api = (CheckinFieldApi) currentConference.getApi(MainActivity.this);
+        }
+
+        @Override
+        protected void onPreExecute() {
+            progressBar.setVisibility(View.VISIBLE);
+        }
+
+        @Override
+        protected Boolean doInBackground(Void... voids) {
+            return api.PerformFieldCheckin(token);
+        }
+
+        @Override
+        protected void onPostExecute(Boolean success) {
+            progressBar.setVisibility(View.INVISIBLE);
+
+            if (success) {
+                ScanCompletedDialog("Badge scanned", String.format("The attendee field %s has been marked.", fieldname));
+            } else {
+                if (api.LastStatus() == 403 || api.LastStatus() == 404) {
+                    ScanCompletedDialog("Scanning failed", api.LastData());
+                } else {
+                    ScanCompletedDialog("Network error", api.LastError());
+                }
+            }
+        }
+    }
+
+    private void CompleteCheckinField(Intent data) {
+        /* The current attendee needs to be checked in */
+        if (currentConference == null) {
+            /* Should never happen */
+            pauseDetection = false;
+            return;
+        }
+
+        new aDoCheckinField(data.getStringExtra("token"), currentConference.fieldname).execute();
+    }
+
 }

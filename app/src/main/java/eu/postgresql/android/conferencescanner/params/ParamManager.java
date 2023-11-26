@@ -13,6 +13,8 @@ import java.util.Iterator;
 
 import static android.content.Context.MODE_PRIVATE;
 
+import eu.postgresql.android.conferencescanner.ScanType;
+
 public class ParamManager {
     public static ArrayList<ConferenceEntry> LoadConferences(Context ctx) {
         SharedPreferences pref = ctx.getSharedPreferences("conferences", MODE_PRIVATE);
@@ -31,7 +33,11 @@ public class ParamManager {
                 while (itr.hasNext()) {
                     ConferenceEntry e = itr.next();
                     if (e.confname == null || e.baseurl == null || e.scantype == null) {
-                        Log.w("Invalid values in conference %s, removing", e.confname);
+                        Log.w("conferencescanner", String.format("Invalid values in conference %s, removing", e.confname));
+                        itr.remove();
+                    }
+                    if (e.scantype == ScanType.CHECKINFIELD && e.fieldname == null) {
+                        Log.w("conferencescanner", String.format("Mandatory fieldname missing for conference %s, removing", e.confname));
                         itr.remove();
                     }
                 }

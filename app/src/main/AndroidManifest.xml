@@ -41,6 +41,10 @@
                     android:scheme="https" />
                 <data
                     android:host="*.postgresql.eu"
+                    android:pathPattern="/events/.*/checkin/.*/f.*/"
+                    android:scheme="https" />
+                <data
+                    android:host="*.postgresql.eu"
                     android:pathPattern="/events/sponsor/scanning/.*"
                     android:scheme="https" />
 

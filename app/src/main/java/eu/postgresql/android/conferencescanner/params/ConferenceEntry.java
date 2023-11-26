@@ -10,12 +10,14 @@ import eu.postgresql.android.conferencescanner.ScanType;
 import eu.postgresql.android.conferencescanner.api.ApiBase;
 import eu.postgresql.android.conferencescanner.api.CheckinApi;
 import eu.postgresql.android.conferencescanner.api.SponsorApi;
+import eu.postgresql.android.conferencescanner.api.CheckinFieldApi;
 
 public class ConferenceEntry {
 
     public String confname;
     public String baseurl;
     public ScanType scantype;
+    public String fieldname;
 
     public transient boolean selected;
 
@@ -27,6 +29,7 @@ public class ConferenceEntry {
         switch (scantype) {
         case CHECKIN: return new CheckinApi(ctx, baseurl);
         case SPONSORBADGE: return new SponsorApi(ctx, baseurl);
+        case CHECKINFIELD: return new CheckinFieldApi(ctx, baseurl);
         }
         return null;
     }
@@ -44,6 +47,7 @@ public class ConferenceEntry {
         switch (scantype) {
         case CHECKIN: return "Check-in processing";
         case SPONSORBADGE: return "Attendee badge scanning";
+        case CHECKINFIELD: return "Check-in field scanning";
         }
         return null;
     }
@@ -52,7 +56,17 @@ public class ConferenceEntry {
         switch (scantype) {
         case CHECKIN: return "id";
         case SPONSORBADGE: return "at";
+        case CHECKINFIELD: return "at";
         }
         return null;
+    }
+
+    public String GetMenuTitle() {
+        if (scantype == ScanType.CHECKINFIELD) {
+            return String.format("%s: %s", confname, fieldname);
+        }
+        else {
+            return confname;
+        }
     }
 }

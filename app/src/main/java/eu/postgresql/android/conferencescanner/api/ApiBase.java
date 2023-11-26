@@ -23,6 +23,7 @@ import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
 import eu.postgresql.android.conferencescanner.ScanType;
+import eu.postgresql.android.conferencescanner.params.ConferenceEntry;
 
 @SuppressWarnings("WeakerAccess")
 public abstract class ApiBase {
@@ -63,7 +64,7 @@ public abstract class ApiBase {
 
     public abstract boolean CanSearch();
 
-    public abstract String getIntroText(boolean open, String confname);
+    public abstract String getIntroText(boolean open, ConferenceEntry conf);
 
     protected JSONObject ApiGetJSONObject(String suburl) {
         try {

@@ -9,6 +9,7 @@ import org.json.JSONObject;
 import java.util.HashMap;
 
 import eu.postgresql.android.conferencescanner.ScanType;
+import eu.postgresql.android.conferencescanner.params.ConferenceEntry;
 
 public class CheckinApi extends ApiBase {
     public CheckinApi(Context ctx, String baseurl) {
@@ -62,9 +63,9 @@ public class CheckinApi extends ApiBase {
     }
 
     @Override
-    public String getIntroText(boolean open, String confname) {
+    public String getIntroText(boolean open, ConferenceEntry conf) {
         if (open) {
-            return String.format("Ready to check attendees in to %s!\n\nTo scan an attendee, turn on the camera below and focus it on the QR code on the ticket!", confname);
+            return String.format("Ready to check attendees in to %s!\n\nTo scan an attendee, turn on the camera below and focus it on the QR code on the ticket!", conf.confname);
         }
         else {
             return "Check-in processing is not currently open for this conference.";

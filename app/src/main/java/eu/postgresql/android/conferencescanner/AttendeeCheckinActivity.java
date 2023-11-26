@@ -82,6 +82,9 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
         case SPONSORBADGE:
             SetupForSponsor();
             break;
+        case CHECKINFIELD:
+            SetupForCheckinField();
+            break;
         }
 
         lvCheckin.setAdapter(new CheckinAdapter(this, params));
@@ -136,6 +139,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
         }
 
 
+        btnCheckin.setText("Check in!");
         if (getIntent().getBooleanExtra("completed", false)) {
             getSupportActionBar().setTitle("Check-in completed");
             btnCheckin.setVisibility(View.GONE);
@@ -149,7 +153,6 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
             getSupportActionBar().setTitle("Check in attendee");
             btnCheckin.setVisibility(View.VISIBLE);
             btnCancel.setText("Cancel");
-            btnCheckin.setText("Check in!");
             btnCheckin.setOnClickListener(view -> {
                 Intent i = new Intent();
                 i.putExtra("token", getIntent().getStringExtra("token"));
@@ -194,6 +197,64 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
 
         editNotes.setVisibility(View.VISIBLE);
         txtNotesHeader.setVisibility(View.VISIBLE);
+    }
+
+    private void SetupForCheckinField() {
+        String fieldname = getIntent().getStringExtra("fieldname");
+
+        try {
+            reg = new JSONObject(getIntent().getStringExtra("reg"));
+
+            AddParamIfPresent(reg, "name", "Name");
+            AddParamIfPresent(reg, "type", "Registration type");
+            AddParamIfPresent(reg, "tshirt", "T-Shirt size");
+
+            if (reg.has("additional")) {
+                JSONArray additional = reg.getJSONArray("additional");
+                if (additional.length() > 0) {
+                    StringBuilder b = new StringBuilder();
+                    for (int i = 0; i < additional.length(); i++) {
+                        b.append("\u2022 ");
+                        b.append(additional.getString(i));
+                        b.append("\n");
+                    }
+                    params.add(new CheckinParam("Additional options", b.toString()));
+                }
+            }
+
+            if (reg.has("already")) {
+                JSONObject ci = reg.getJSONObject("already");
+                alreadyCheckedIn = true;
+                params.add(new CheckinParam(ci.getString("title"), ci.getString("body")));
+            }
+
+        } catch (JSONException e) {
+            Log.w("conferencescanner", String.format("Failed to parse returned JSON for field checkin: %s", e.toString()));
+            FinishWithError("Failed to parse returned JSON");
+            return;
+        }
+
+        btnCheckin.setText("Store field!");
+        if (alreadyCheckedIn) {
+            getSupportActionBar().setTitle("Field already checked in");
+            btnCheckin.setVisibility(View.VISIBLE);
+            btnCheckin.setEnabled(false);
+            btnCancel.setText("Close");
+        } else {
+            getSupportActionBar().setTitle(String.format("Check in %s", fieldname));
+            btnCheckin.setVisibility(View.VISIBLE);
+            btnCancel.setText("Cancel");
+            btnCheckin.setOnClickListener(view -> {
+                Intent i = new Intent();
+                i.putExtra("token", getIntent().getStringExtra("token"));
+                i.putExtra("scantype", ScanType.CHECKINFIELD);
+                setResult(RESULT_OK, i);
+                finish();
+            });
+        }
+
+        editNotes.setVisibility(View.GONE);
+        txtNotesHeader.setVisibility(View.GONE);
     }
 
 

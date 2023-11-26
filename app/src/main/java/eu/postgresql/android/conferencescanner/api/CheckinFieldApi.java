@@ -2,6 +2,7 @@ package eu.postgresql.android.conferencescanner.api;
 
 import android.content.Context;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -10,22 +11,38 @@ import java.util.HashMap;
 import eu.postgresql.android.conferencescanner.ScanType;
 import eu.postgresql.android.conferencescanner.params.ConferenceEntry;
 
-public class SponsorApi extends ApiBase {
-    public SponsorApi(Context ctx, String baseurl) {
+public class CheckinFieldApi extends ApiBase {
+    private String _confname = null;
+    private String _fieldname = null;
+
+    public CheckinFieldApi(Context ctx, String baseurl) {
         super(ctx, baseurl);
     }
 
     @Override
     public String GetConferenceName() {
+        if (_confname == null)
+            RefreshNames();
+        return _confname;
+    }
+
+    public String GetFieldName() {
+        if (_fieldname == null)
+            RefreshNames();
+        return _fieldname;
+    }
+
+    private void RefreshNames() {
         JSONObject status = ApiGetJSONObject("api/status/");
         if (status == null)
-            return null;
+            return;
 
         try {
-            return String.format("%s for %s", status.getString("confname"), status.getString("sponsorname"));
+            _confname = status.getString("confname");
+            _fieldname = status.getString("fieldname");
         } catch (JSONException e) {
             lasterror = "Could not parse JSON contents";
-            return null;
+            return;
         }
     }
 
@@ -34,9 +51,13 @@ public class SponsorApi extends ApiBase {
         return new OpenAndAdmin(true, false);
     }
 
+    public JSONObject Lookup(String qrcode) {
+        return ApiGetJSONObject(String.format("api/lookup/?lookup=%s", urlencode(qrcode)));
+    }
+
     @Override
     public ScanType GetScanType() {
-        return ScanType.SPONSORBADGE;
+        return ScanType.CHECKINFIELD;
     }
 
     @Override
@@ -47,22 +68,16 @@ public class SponsorApi extends ApiBase {
     @Override
     public String getIntroText(boolean open, ConferenceEntry conf) {
         if (open) {
-            return String.format("Welcome as a sponsor scanner for %s.\n\nTo scan an attendee badge, turn on the camera below and focus it on the QR code on the attendee badge. Once a QR code is detected, the system will proceed automatically.", conf.confname);
+            return String.format("Ready to check in field %s for attendees of %s.\n\nTo scan an attendee, turn on the camera below and focus it on the QR code on the badge!", conf.fieldname, conf.confname);
         }
         else {
-            return "Badge scanning is not currently open for this conference .";
+            return "Check-in processing is not currently open for this conference.";
         }
     }
 
-    @Override
-    public JSONObject Lookup(String qrcode) {
-        return ApiGetJSONObject(String.format("api/lookup/?lookup=%s", urlencode(qrcode)));
-    }
-
-    public boolean StoreScan(String token, String note) {
+    public Boolean PerformFieldCheckin(String token) {
         HashMap<String, String> params = new HashMap<>();
         params.put("token", token);
-        params.put("note", note);
         JSONObject store = ApiPostForJSONObject("api/store/", params);
         return (store != null);
     }
