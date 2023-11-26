@@ -290,7 +290,7 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(ApiBase.OpenAndAdmin data) {
             progressBar.setVisibility(View.INVISIBLE);
 
-            getSupportActionBar().setTitle(String.format("%s - %s", currentConference.confname, currentConference.getTypeString()));
+            getSupportActionBar().setTitle(String.format("%s - %s", currentConference.GetMenuTitle(), currentConference.getTypeString()));
             if (data == null) {
                 ErrorBox("Network error", api.LastError());
                 viewfinder.setVisibility(View.INVISIBLE);
