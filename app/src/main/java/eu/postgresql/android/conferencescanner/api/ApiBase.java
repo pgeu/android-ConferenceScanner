@@ -58,8 +58,6 @@ public abstract class ApiBase {
     public abstract ScanType GetScanType();
 
 
-    public abstract JSONObject Lookup(String qrcode);
-
     public abstract boolean CanSearch();
 
     public abstract String getIntroText(boolean open, ConferenceEntry conf);
@@ -171,6 +169,14 @@ public abstract class ApiBase {
         } catch (UnsupportedEncodingException e) {
             return "";
         }
+    }
+
+    public JSONObject Lookup(String qrcode) {
+        return ApiGetJSONObject(String.format("api/lookup/?lookup=%s", urlencode(qrcode)));
+    }
+
+    public JSONObject Search(String searchterm) {
+        return ApiGetJSONObject(String.format("api/search/?search=%s", urlencode(searchterm)));
     }
 
     public class OpenAndAdmin {

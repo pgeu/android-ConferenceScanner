@@ -49,11 +49,6 @@ public class SponsorApi extends ApiBase {
         }
     }
 
-    @Override
-    public JSONObject Lookup(String qrcode) {
-        return ApiGetJSONObject(String.format("api/lookup/?lookup=%s", urlencode(qrcode)));
-    }
-
     public boolean StoreScan(String token, String note) {
         HashMap<String, String> params = new HashMap<>();
         params.put("token", token);

@@ -46,10 +46,6 @@ public class CheckinFieldApi extends ApiBase {
         }
     }
 
-    public JSONObject Lookup(String qrcode) {
-        return ApiGetJSONObject(String.format("api/lookup/?lookup=%s", urlencode(qrcode)));
-    }
-
     @Override
     public ScanType GetScanType() {
         return ScanType.CHECKINFIELD;
