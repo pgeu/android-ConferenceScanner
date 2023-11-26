@@ -30,11 +30,6 @@ public class SponsorApi extends ApiBase {
     }
 
     @Override
-    public OpenAndAdmin GetIsOpenAndAdmin() {
-        return new OpenAndAdmin(true, false);
-    }
-
-    @Override
     public ScanType GetScanType() {
         return ScanType.SPONSORBADGE;
     }

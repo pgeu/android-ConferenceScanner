@@ -30,20 +30,6 @@ public class CheckinApi extends ApiBase {
         }
     }
 
-    @Override
-    public OpenAndAdmin GetIsOpenAndAdmin() {
-        JSONObject status = ApiGetJSONObject("api/status/");
-        if (status == null)
-            return null;
-
-        try {
-            return new OpenAndAdmin(status.getBoolean("active"), status.getBoolean("admin"));
-        } catch (JSONException e) {
-            lasterror = "Could not parse JSON contents";
-            return null;
-        }
-    }
-
     public JSONObject Lookup(String qrcode) {
         return ApiGetJSONObject(String.format("api/lookup/?lookup=%s", urlencode(qrcode)));
     }

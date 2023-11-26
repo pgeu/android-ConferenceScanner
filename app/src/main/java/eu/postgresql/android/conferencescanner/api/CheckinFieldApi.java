@@ -46,11 +46,6 @@ public class CheckinFieldApi extends ApiBase {
         }
     }
 
-    @Override
-    public OpenAndAdmin GetIsOpenAndAdmin() {
-        return new OpenAndAdmin(true, false);
-    }
-
     public JSONObject Lookup(String qrcode) {
         return ApiGetJSONObject(String.format("api/lookup/?lookup=%s", urlencode(qrcode)));
     }

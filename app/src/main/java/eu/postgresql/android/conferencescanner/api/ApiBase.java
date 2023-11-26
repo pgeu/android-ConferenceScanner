@@ -55,8 +55,6 @@ public abstract class ApiBase {
 
     public abstract String GetConferenceName();
 
-    public abstract OpenAndAdmin GetIsOpenAndAdmin();
-
     public abstract ScanType GetScanType();
 
 
@@ -182,6 +180,19 @@ public abstract class ApiBase {
         public OpenAndAdmin(boolean open, boolean admin) {
             this.open = open;
             this.admin = admin;
+        }
+    }
+
+    public OpenAndAdmin GetIsOpenAndAdmin() {
+        JSONObject status = ApiGetJSONObject("api/status/");
+        if (status == null)
+            return null;
+
+        try {
+            return new OpenAndAdmin(status.getBoolean("active"), status.getBoolean("admin"));
+        } catch (JSONException e) {
+            lasterror = "Could not parse JSON contents";
+            return null;
         }
     }
 }
