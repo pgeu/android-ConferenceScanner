@@ -36,15 +36,15 @@
 
                 <!-- PostgreSQL Europe -->
                 <data
-                    android:host="*.postgresql.eu"
+                    android:host="www.postgresql.eu"
                     android:pathPattern="/events/.*/checkin/.*/"
                     android:scheme="https" />
                 <data
-                    android:host="*.postgresql.eu"
+                    android:host="www.postgresql.eu"
                     android:pathPattern="/events/.*/checkin/.*/f.*/"
                     android:scheme="https" />
                 <data
-                    android:host="*.postgresql.eu"
+                    android:host="www.postgresql.eu"
                     android:pathPattern="/events/sponsor/scanning/.*"
                     android:scheme="https" />
 
