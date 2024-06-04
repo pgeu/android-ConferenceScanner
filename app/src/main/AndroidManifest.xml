@@ -62,6 +62,19 @@
                     android:pathPattern="/events/sponsor/scanning/.*"
                     android:scheme="https" />
 
+                <!-- Slonik Events Canada -->
+                <data
+                    android:host="www.pgevents.ca"
+                    android:pathPattern="/events/.*/checkin/.*/"
+                    android:scheme="https" />
+                <data
+                    android:host="www.pgevents.ca"
+                    android:pathPattern="/events/.*/checkin/.*/f.*/"
+                    android:scheme="https" />
+                <data
+                    android:host="www.pgevents.ca"
+                    android:pathPattern="/events/sponsor/scanning/.*"
+                    android:scheme="https" />
             </intent-filter>
         </activity>
 
