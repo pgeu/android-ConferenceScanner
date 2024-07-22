@@ -24,6 +24,7 @@ android {
     lintOptions {
         checkReleaseBuilds false
     }
+    namespace 'eu.postgresql.android.conferencescanner'
 }
 
 dependencies {
