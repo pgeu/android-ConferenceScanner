@@ -33,18 +33,18 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
     private class CheckinParam {
         final String name;
         final String value;
-        final boolean alertonnot;
+        final boolean highlight;
 
         private CheckinParam(String name, String value) {
             this.name = name;
             this.value = value;
-            this.alertonnot = false;
+            this.highlight = false;
         }
 
-        private CheckinParam(String name, String value, boolean alertonnot) {
+        private CheckinParam(String name, String value, boolean highlight) {
             this.name = name;
             this.value = value;
-            this.alertonnot = alertonnot;
+            this.highlight = highlight;
         }
     }
 
@@ -91,14 +91,19 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
     }
 
 
-    private void AddParamIfPresent(JSONObject reg, String name, String title, boolean alertonnot)  throws JSONException {
+    private void AddParamIfPresent(JSONObject reg, String name, String title)  throws JSONException {
         if (reg.has(name) && !reg.isNull(name) && !reg.getString(name).isEmpty()) {
-            params.add(new CheckinParam(title, reg.getString(name), alertonnot));
-        }
-    }
+            final JSONArray highlights = reg.getJSONArray("highlight");
+            boolean highlight = false;
 
-    private void AddParamIfPresent(JSONObject reg, String name, String title) throws JSONException {
-        AddParamIfPresent(reg, name, title, false);
+            for (int i = 0; i < highlights.length(); i++) {
+                if (highlights.getString(i).equals(name)) {
+                    highlight = true;
+                    break;
+                }
+            }
+            params.add(new CheckinParam(title, reg.getString(name), highlight));
+        }
     }
 
     private void SetupForCheckin() {
@@ -107,8 +112,9 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
 
             AddParamIfPresent(reg, "name", "Name");
             AddParamIfPresent(reg, "type", "Registration type");
-            AddParamIfPresent(reg, "photoconsent", "Photo consent", true);
-            AddParamIfPresent(reg, "policyconfirmed", "Policy confirmed", true);
+            AddParamIfPresent(reg, "checkinmessage", "Check-in message");
+            AddParamIfPresent(reg, "photoconsent", "Photo consent");
+            AddParamIfPresent(reg, "policyconfirmed", "Policy confirmed");
             AddParamIfPresent(reg, "tshirt", "T-Shirt size");
             AddParamIfPresent(reg, "company", "Company");
             AddParamIfPresent(reg, "partition", "Queue Partition");
@@ -289,7 +295,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
                 fieldval.setText("");
             else {
                 fieldval.setText(p.value);
-                if (p.alertonnot && p.value.contains(" NOT ")) {
+                if (p.highlight) {
                     fieldval.setBackgroundColor(Color.RED);
                 } else {
                     fieldval.setBackgroundColor(Color.TRANSPARENT);
