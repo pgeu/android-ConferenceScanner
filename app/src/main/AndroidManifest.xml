@@ -74,6 +74,20 @@
                     android:host="www.pgevents.ca"
                     android:pathPattern="/events/sponsor/scanning/.*"
                     android:scheme="https" />
+
+                <!-- PGDay.UK -->
+                <data
+                    android:host="pgday.uk"
+                    android:pathPattern="/events/.*/checkin/.*/"
+                    android:scheme="https" />
+                <data
+                    android:host="pgday.uk"
+                    android:pathPattern="/events/.*/checkin/.*/f.*/"
+                    android:scheme="https" />
+                <data
+                    android:host="pgday.uk"
+                    android:pathPattern="/events/sponsor/scanning/.*"
+                    android:scheme="https" />
             </intent-filter>
         </activity>
 
