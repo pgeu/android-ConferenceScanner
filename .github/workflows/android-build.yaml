@@ -1,0 +1,24 @@
+name: Bulid android bundle
+
+on: [push, pull_request]
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+
+    steps:
+    - uses: actions/checkout@v2
+    - name: Set up JDK
+      uses: actions/setup-java@v5
+      with:
+        java-version: "21"
+        cache: gradle
+
+    - name: Clean
+      run: ./gradlew clean
+
+    - name: Build APK
+      run: ./gradlew assembleRelease
+
+    - name: Bulid bundle
+      run: ./gradlew bundleRelease --warning-mode all
