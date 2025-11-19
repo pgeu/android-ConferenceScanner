@@ -21,5 +21,17 @@ jobs:
     - name: Build APK
       run: ./gradlew assembleRelease
 
+    - name: Upload APK artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: apks
+        path: "app/build/outputs/apk/release/*.apk"
+
     - name: Bulid bundle
       run: ./gradlew bundleRelease --warning-mode all
+
+    - name: Upload bundle artifacts
+      uses: actions/upload-artifact@v4
+      with:
+        name: bundles
+        path: "app/build/outputs/bundle/release/*.aab"
