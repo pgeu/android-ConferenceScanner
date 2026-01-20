@@ -734,10 +734,10 @@ public class MainActivity extends AppCompatActivity
                 else {
                     ScanCompletedDialog(String.format("%s scanned", TokenType.tokenIsFrom(tokentype)),
                                         String.format("You have scanned a %s. For %s, you must scan the %s, not the %s.",
-                                                      TokenType.tokenIsFrom(tokentype),
+                                                      TokenType.tokenIsFrom(tokentype).toLowerCase(),
                                                       currentConference.getTypeString().toLowerCase(),
-                                                      TokenType.tokenIsFrom(currentConference.expectedTokenType()),
-                                                      TokenType.tokenIsFrom(tokentype)
+                                                      TokenType.tokenIsFrom(currentConference.expectedTokenType()).toLowerCase(),
+                                                      TokenType.tokenIsFrom(tokentype).toLowerCase()
                                                       ));
                 }
             }

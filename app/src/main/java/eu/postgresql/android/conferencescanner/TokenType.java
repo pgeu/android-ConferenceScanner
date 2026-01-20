@@ -3,13 +3,13 @@ package eu.postgresql.android.conferencescanner;
 public class TokenType {
     public static String tokenIsFrom(String tokentype) {
         if (tokentype.equals("id")) {
-            return "ticket";
+            return "Ticket";
         }
         else if (tokentype.equals("at")) {
-            return "badge";
+            return "Badge";
         }
         else {
-            return "unknown";
+            return "Unknown";
         }
     }
 }
