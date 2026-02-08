@@ -52,7 +52,7 @@
         android:background="@drawable/edit_text_border"
         android:inputType="text|textAutoCorrect|textMultiLine" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_CheckIn"
         android:layout_width="0dp"
         android:layout_height="64dp"
@@ -63,7 +63,7 @@
         app:layout_constraintLeft_toLeftOf="parent"
         app:layout_constraintRight_toLeftOf="@id/btn_Cancel" />
 
-    <Button
+    <com.google.android.material.button.MaterialButton
         android:id="@+id/btn_Cancel"
         android:layout_width="0dp"
         android:layout_height="64dp"

@@ -11,6 +11,8 @@ import android.text.InputType;
 import android.util.Log;
 import android.view.SubMenu;
 import android.view.View;
+import android.view.ViewGroup;
+import android.widget.FrameLayout;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
@@ -27,6 +29,7 @@ import androidx.appcompat.app.ActionBarDrawerToggle;
 import android.view.MenuItem;
 
 import com.google.android.material.navigation.NavigationView;
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
 import com.google.common.util.concurrent.ListenableFuture;
 
 import androidx.drawerlayout.widget.DrawerLayout;
@@ -402,7 +405,7 @@ public class MainActivity extends AppCompatActivity
             input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
             input.setHint("https://test.com/events/test/checkin/abc123def456/");
 
-            new AlertDialog.Builder(this)
+            new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_FullWidthButtons)
                     .setTitle("Enter URL")
                     .setMessage("Paste the full URL for scanning application (this will be an URL that contains a long random set of characters at the end).\n\nNote that in most cases you can also click the link in the email or on the website where you received it, and the conference will automatically be added.")
                     .setView(input)
@@ -583,7 +586,7 @@ public class MainActivity extends AppCompatActivity
 
 
     private void ErrorBox(String title, String msg) {
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_FullWidthButtons)
                 .setTitle(title)
                 .setMessage(msg)
                 .setIcon(android.R.drawable.ic_dialog_alert)
@@ -640,7 +643,7 @@ public class MainActivity extends AppCompatActivity
 
     private void ScanCompletedDialog(String title, String msg) {
         pauseDetection = true;
-        new AlertDialog.Builder(this)
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_FullWidthButtons)
                 .setTitle(title)
                 .setMessage(msg)
                 .setPositiveButton("OK", (dialogInterface, i) -> pauseDetection = false)
@@ -861,7 +864,7 @@ public class MainActivity extends AppCompatActivity
                     }
 
                     /* Show the list */
-                    AlertDialog dlg = new AlertDialog.Builder(MainActivity.this)
+                    AlertDialog dlg = new MaterialAlertDialogBuilder(MainActivity.this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_FullWidthButtons)
                             .setTitle("Select attendee")
                             .setItems(regnames, (dialogInterface, i) -> {
                                 try {
@@ -893,12 +896,20 @@ public class MainActivity extends AppCompatActivity
         }
 
         final EditText input = new EditText(this);
+        input.setSingleLine();
         input.setInputType(InputType.TYPE_CLASS_TEXT);
 
-        new AlertDialog.Builder(this)
+        FrameLayout container = new FrameLayout(this);
+        FrameLayout.LayoutParams params = new  FrameLayout.LayoutParams(ViewGroup.LayoutParams.MATCH_PARENT, ViewGroup.LayoutParams.WRAP_CONTENT);
+        params.leftMargin = (int)(20 * this.getResources().getDisplayMetrics().density);
+        params.rightMargin = (int)(20 * this.getResources().getDisplayMetrics().density);
+        input.setLayoutParams(params);
+        container.addView(input);
+
+        new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_FullWidthButtons)
                 .setTitle("Search attendee")
                 .setMessage("Enter part of attendee name")
-                .setView(input)
+                .setView(container)
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Search", (dialogInterface, i) -> {
                     new DoSearchAttendee(input.getText().toString()).execute();

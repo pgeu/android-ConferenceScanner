@@ -17,6 +17,8 @@ import android.widget.ListView;
 import android.widget.TextView;
 import android.widget.Toast;
 
+import com.google.android.material.dialog.MaterialAlertDialogBuilder;
+
 import java.util.ArrayList;
 import java.util.List;
 
@@ -64,7 +66,7 @@ public class ListConferencesActivity extends AppCompatActivity {
                 Toast.makeText(ListConferencesActivity.this, "No registrations selected to delete", Toast.LENGTH_LONG).show();
                 finish();
             } else {
-                new AlertDialog.Builder(ListConferencesActivity.this)
+                new MaterialAlertDialogBuilder(ListConferencesActivity.this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_FullWidthButtons)
                         .setTitle("Are you sure?")
                         .setMessage(String.format("Are you sure you want to remove these %d registrations?", num))
                         .setNegativeButton("No", (dialogInterface, i) -> finish())
