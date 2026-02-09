@@ -10,7 +10,9 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="2"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Body1"
         android:paddingLeft="?android:attr/expandableListPreferredChildPaddingLeft"
+        android:paddingRight="2dp"
         android:paddingTop="5dp"
         android:paddingBottom="5dp" />
 
@@ -19,7 +21,8 @@
         android:layout_width="0dp"
         android:layout_height="wrap_content"
         android:layout_weight="1"
-        android:gravity="right"
+        android:gravity="left"
+        android:paddingRight="2dp"
         android:paddingTop="5dp"
         android:paddingBottom="5dp" />
 

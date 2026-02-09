@@ -11,6 +11,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="2"
         android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
         android:paddingLeft="?android:attr/expandableListPreferredItemPaddingLeft"
         android:paddingTop="5dp"
         android:paddingBottom="5dp" />
@@ -21,7 +22,8 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:textStyle="bold"
-        android:gravity="right"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
+        android:gravity="left"
         android:paddingTop="5dp"
         android:paddingBottom="5dp" />
 
@@ -31,6 +33,7 @@
         android:layout_height="wrap_content"
         android:layout_weight="1"
         android:textStyle="bold"
+        android:textAppearance="@style/TextAppearance.MaterialComponents.Subtitle1"
         android:gravity="right"
         android:paddingTop="5dp"
         android:paddingBottom="5dp" />
