@@ -54,6 +54,7 @@ import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
 import java.util.Iterator;
+import java.util.ListIterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -325,6 +326,7 @@ public class MainActivity extends AppCompatActivity
 
                 /* Each status response includes a list of all conferences we have permissions on. So add any that we don't have already! */
                 AddConferencesFrom(data.permissions, data.sitebase);
+                AutoDeleteConferences();
             }
         }
     }
@@ -416,6 +418,29 @@ public class MainActivity extends AppCompatActivity
         /* No match, so add it */
         conferences.add(newentry);
         return true;
+    }
+
+    private void AutoDeleteConferences() {
+        if (!PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autodel", false))
+            return;
+
+        int removed = 0;
+
+        /* Use a ListIterator so we can make modifications while running */
+        ListIterator<ConferenceEntry> iter = conferences.listIterator();
+        while (iter.hasNext()) {
+            final ConferenceEntry entry = iter.next();
+
+            if (entry.DateExpired()) {
+                iter.remove();
+                removed++;
+            }
+        }
+
+        if (removed > 0) {
+            ParamManager.SaveConferences(this, conferences);
+            UpdateNavigationView();
+        }
     }
 
     private void StopCamera() {
@@ -673,6 +698,12 @@ public class MainActivity extends AppCompatActivity
             else if (r.scantype == ScanType.SPONSORBADGE) {
                 r.sponsorname = sponsorname;
             }
+
+            if (r.DateExpired() && PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getBoolean("autodel", false)) {
+                ErrorBox("Conference would be deleted", "This conference is old enough that it would immediately be auto-deleted. If you wish to add it, you must first turn off automatic deletion in the preferences.");
+                return;
+            }
+
             conferences.add(0, r); // Always insert at the top of the list!
             ParamManager.SaveConferences(MainActivity.this, conferences);
 

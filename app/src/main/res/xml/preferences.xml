@@ -8,5 +8,11 @@
         app:summary="Automatically add new conferences if they show up as available when loading another conference"
         app:defaultValue="true"
         />
+    <SwitchPreferenceCompat
+        app:key="autodel"
+        app:title="Auto-delete old conferences"
+        app:summary="Automatically delete old conferences when their date is more than a month in the past"
+        app:defaultValue="true"
+        />
   </PreferenceCategory>
 </androidx.preference.PreferenceScreen>

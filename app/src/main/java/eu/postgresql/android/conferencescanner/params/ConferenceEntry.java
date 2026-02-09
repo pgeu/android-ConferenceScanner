@@ -5,6 +5,8 @@ import android.content.Context;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.lang.Comparable;
+import java.time.LocalDateTime;
+import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
 
 import eu.postgresql.android.conferencescanner.ScanType;
@@ -71,6 +73,11 @@ public class ConferenceEntry implements Comparable<ConferenceEntry> {
         case SPONSORBADGE: return String.format("%s for %s", confname, sponsorname);
         }
         return null;
+    }
+
+    public boolean DateExpired() {
+        final String expireBefore = LocalDateTime.now().minusDays(31).format(DateTimeFormatter.ofPattern("yyyy-MM-dd"));
+        return startdate != null && startdate.compareTo(expireBefore) < 0;
     }
 
     private int compareDateTo(ConferenceEntry other) {
