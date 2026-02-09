@@ -4,14 +4,9 @@
     tools:showIn="navigation_view">
 
     <item
-        android:title="Check-in"
+        android:title="Conferences"
         android:id="@+id/itemCheckin">
         <menu android:id="@+id/menuCheckin" />
-    </item>
-    <item
-        android:title="Sponsor"
-        android:id="@+id/itemSponsor">
-        <menu android:id="@+id/menuSponsor"/>
     </item>
     <item android:title="Manage">
         <item

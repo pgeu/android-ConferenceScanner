@@ -9,6 +9,7 @@ import com.google.gson.Gson;
 import com.google.gson.reflect.TypeToken;
 
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.Iterator;
 
 import static android.content.Context.MODE_PRIVATE;
@@ -46,6 +47,7 @@ public class ParamManager {
                     }
                 }
 
+                Collections.sort(entries);
                 return entries;
             }
             catch (Exception e) {

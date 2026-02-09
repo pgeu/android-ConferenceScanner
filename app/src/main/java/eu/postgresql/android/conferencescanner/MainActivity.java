@@ -605,18 +605,11 @@ public class MainActivity extends AppCompatActivity
     private void UpdateNavigationView() {
         Menu mainMenu = navigationView.getMenu();
         SubMenu checkinMenu = mainMenu.findItem(R.id.itemCheckin).getSubMenu();
-        SubMenu sponsorMenu = mainMenu.findItem(R.id.itemSponsor).getSubMenu();
 
         checkinMenu.clear();
-        sponsorMenu.clear();
 
         for (int i = 0; i < conferences.size(); i++) {
-            if (conferences.get(i).scantype == ScanType.SPONSORBADGE) {
-                sponsorMenu.add(0, MENU_FIRST_CONFERENCE + i, Menu.NONE, conferences.get(i).GetMenuTitle()).setCheckable(true);
-            } else {
-                /* Both CHECKIN and CHECKINFIELD */
-                checkinMenu.add(0, MENU_FIRST_CONFERENCE + i, Menu.NONE, conferences.get(i).GetMenuTitle()).setCheckable(true);
-            }
+            checkinMenu.add(0, MENU_FIRST_CONFERENCE + i, Menu.NONE, conferences.get(i).GetMenuTitle()).setCheckable(true);
         }
         UpdateSelectedConference();
     }
@@ -628,7 +621,6 @@ public class MainActivity extends AppCompatActivity
             selected_id = MENU_FIRST_CONFERENCE + conferences.indexOf(currentConference);
 
         _clear_submenu(mainMenu.findItem(R.id.itemCheckin).getSubMenu());
-        _clear_submenu(mainMenu.findItem(R.id.itemSponsor).getSubMenu());
 
         if (selected_id > 0) {
             MenuItem itm = mainMenu.findItem(selected_id);
