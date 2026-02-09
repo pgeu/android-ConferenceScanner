@@ -16,9 +16,18 @@ public class SponsorApi extends ApiBase {
         super(ctx, baseurl);
     }
 
-    @Override
-    public String FormatConferenceName(JSONObject status) throws JSONException {
-        return String.format("%s for %s", status.getString("confname"), status.getString("sponsorname"));
+    public String GetSponsorName() {
+        RefreshStatus();
+        if (_status == null)
+            return null;
+
+        try {
+            return _status.getString("sponsorname");
+        }
+        catch (JSONException e) {
+            lasterror = "Could not parse JSON contents";
+            return null;
+        }
     }
 
     @Override

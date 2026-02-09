@@ -515,6 +515,7 @@ public class MainActivity extends AppCompatActivity
         private boolean skip = false;
         private String confname = null;
         private String fieldname = null;
+        private String sponsorname = null;
 
         private DoAddConference(ApiBase api) {
             this.api = api;
@@ -548,6 +549,9 @@ public class MainActivity extends AppCompatActivity
             if (api.GetScanType() == ScanType.CHECKINFIELD) {
                 fieldname = ((CheckinFieldApi) api).GetFieldName();
             }
+            else if (api.GetScanType() == ScanType.SPONSORBADGE) {
+                sponsorname = ((SponsorApi) api).GetSponsorName();
+            }
 
             return null;
         }
@@ -571,6 +575,9 @@ public class MainActivity extends AppCompatActivity
             r.scantype = api.GetScanType();
             if (r.scantype == ScanType.CHECKINFIELD) {
                 r.fieldname = fieldname;
+            }
+            else if (r.scantype == ScanType.SPONSORBADGE) {
+                r.sponsorname = sponsorname;
             }
             conferences.add(0, r); // Always insert at the top of the list!
             ParamManager.SaveConferences(MainActivity.this, conferences);

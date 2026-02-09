@@ -40,6 +40,10 @@ public class ParamManager {
                         Log.w("conferencescanner", String.format("Mandatory fieldname missing for conference %s, removing", e.confname));
                         itr.remove();
                     }
+                    if (e.scantype == ScanType.SPONSORBADGE && e.sponsorname == null) {
+                        Log.w("conferencescanner", String.format("Mandatory fieldname missing for sponsor at conference %s, removing", e.confname));
+                        itr.remove();
+                    }
                 }
 
                 return entries;

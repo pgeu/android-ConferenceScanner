@@ -59,7 +59,6 @@ public abstract class ApiBase {
             _status = ApiGetJSONObject("api/status/");
     }
 
-    public abstract String FormatConferenceName(JSONObject status) throws JSONException;
     public String GetConferenceName() {
         RefreshStatus();
 
@@ -67,7 +66,7 @@ public abstract class ApiBase {
             return null;
 
         try {
-            return FormatConferenceName(_status);
+            return _status.getString("confname");
         } catch (JSONException e) {
             lasterror = "Could not parse JSON contents";
             return null;

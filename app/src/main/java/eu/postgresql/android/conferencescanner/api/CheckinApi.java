@@ -17,11 +17,6 @@ public class CheckinApi extends ApiBase {
     }
 
     @Override
-    public String FormatConferenceName(JSONObject status) throws JSONException {
-        return status.getString("confname");
-    }
-
-    @Override
     public ScanType GetScanType() {
         return ScanType.CHECKIN;
     }

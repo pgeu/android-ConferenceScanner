@@ -18,6 +18,7 @@ public class ConferenceEntry {
     public String baseurl;
     public ScanType scantype;
     public String fieldname;
+    public String sponsorname;
 
     public transient boolean selected;
 
@@ -62,11 +63,11 @@ public class ConferenceEntry {
     }
 
     public String GetMenuTitle() {
-        if (scantype == ScanType.CHECKINFIELD) {
-            return String.format("%s: %s", confname, fieldname);
+        switch (scantype) {
+        case CHECKIN: return String.format("%s: check-in", confname);
+        case CHECKINFIELD: return String.format("%s: %s", confname, fieldname);
+        case SPONSORBADGE: return String.format("%s for %s", confname, sponsorname);
         }
-        else {
-            return confname;
-        }
+        return null;
     }
 }

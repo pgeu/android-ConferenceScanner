@@ -16,11 +16,6 @@ public class CheckinFieldApi extends ApiBase {
         super(ctx, baseurl);
     }
 
-    @Override
-    public String FormatConferenceName(JSONObject status) throws JSONException {
-        return status.getString("confname");
-    }
-
     public String GetFieldName() {
         RefreshStatus();
         if (_status == null)
