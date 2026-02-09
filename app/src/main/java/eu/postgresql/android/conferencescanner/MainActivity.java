@@ -678,6 +678,9 @@ public class MainActivity extends AppCompatActivity
         protected void onPostExecute(Void success) {
             progressBar.setVisibility(View.INVISIBLE);
 
+            if (skip)
+                return;
+
             if (confname == null) {
                 ErrorBox("Could not get conference name",
                         String.format("Failed to get the name of the conference:\n%s", api.LastError()));
