@@ -73,6 +73,20 @@ public abstract class ApiBase {
         }
     }
 
+    public String GetConferenceStartDate() {
+        RefreshStatus();
+
+        if (_status == null)
+            return null;
+
+        try {
+            return _status.getString("startdate");
+        } catch (JSONException e) {
+            lasterror = "Could not parse JSON contents";
+            return null;
+        }
+    }
+
     public abstract ScanType GetScanType();
 
 

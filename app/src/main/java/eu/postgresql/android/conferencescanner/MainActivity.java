@@ -605,6 +605,7 @@ public class MainActivity extends AppCompatActivity
         private final ApiBase api;
         private boolean skip = false;
         private String confname = null;
+        private String startdate = null;
         private String fieldname = null;
         private String sponsorname = null;
 
@@ -637,6 +638,7 @@ public class MainActivity extends AppCompatActivity
                 return null;
 
             confname = api.GetConferenceName();
+            startdate = api.GetConferenceStartDate();
             if (api.GetScanType() == ScanType.CHECKINFIELD) {
                 fieldname = ((CheckinFieldApi) api).GetFieldName();
             }
@@ -663,6 +665,7 @@ public class MainActivity extends AppCompatActivity
             ConferenceEntry r = new ConferenceEntry();
             r.baseurl = api.baseurl;
             r.confname = confname;
+            r.startdate = startdate;
             r.scantype = api.GetScanType();
             if (r.scantype == ScanType.CHECKINFIELD) {
                 r.fieldname = fieldname;
