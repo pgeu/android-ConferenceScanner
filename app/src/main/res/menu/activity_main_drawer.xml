@@ -11,7 +11,7 @@
     <item android:title="Manage">
         <item
             android:id="@+id/itemManage"
-            android:title="Edit conferences" />
+            android:title="Delete conferences" />
         <item
             android:id="@+id/itemAdd"
             android:title="Add conference" />
