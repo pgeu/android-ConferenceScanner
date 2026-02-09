@@ -167,7 +167,7 @@ public abstract class ApiBase {
             if (e.getCause() instanceof ClientError) {
                 ClientError error = (ClientError) e.getCause();
                 laststatus = error.networkResponse.statusCode;
-                lasterror = "STATUS";
+                lasterror = String.format("STATUS %d", laststatus);
                 lastdata = error.networkResponse.data;
             } else if (e.getCause() instanceof AuthFailureError) {
                 AuthFailureError error = (AuthFailureError) e.getCause();
