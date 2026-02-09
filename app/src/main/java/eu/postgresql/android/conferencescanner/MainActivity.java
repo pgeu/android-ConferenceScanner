@@ -50,7 +50,9 @@ import org.json.JSONObject;
 
 import java.net.MalformedURLException;
 import java.util.ArrayList;
+import java.util.Collections;
 import java.util.concurrent.ExecutionException;
+import java.util.Iterator;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -309,6 +311,9 @@ public class MainActivity extends AppCompatActivity
                 if (currentConference.scantype == ScanType.CHECKIN && optionsMenu != null) {
                     optionsMenu.findItem(R.id.action_statistics).setEnabled(data.admin);
                 }
+
+                /* Each status response includes a list of all conferences we have permissions on. So add any that we don't have already! */
+                AddConferencesFrom(data.permissions, data.sitebase);
             }
         }
     }
@@ -325,6 +330,78 @@ public class MainActivity extends AppCompatActivity
             /* Make a call to see if check-in is actually open here. Thus, async task! */
             new aUpdateMainView().execute();
         }
+    }
+
+    private void AddConferencesFrom(JSONObject permissions, String sitebase) {
+        int added = 0;
+        Iterator<String> urlnames = permissions.keys();
+        while (urlnames.hasNext()) {
+            final String urlname = urlnames.next();
+
+            try {
+                final JSONObject confperm = permissions.getJSONObject(urlname);
+                final String confname = confperm.getString("name");
+                final boolean checkin = confperm.getBoolean("checkin");
+                final String startdate = confperm.getString("startdate");
+                final JSONArray scannerfields = confperm.has("scannerfields") ? confperm.getJSONArray("scannerfields") : new JSONArray();
+                final JSONArray sponsors = confperm.has("sponsors") ? confperm.getJSONArray("sponsors") : new JSONArray();
+
+                if (checkin) {
+                    final ConferenceEntry newentry = new ConferenceEntry();
+                    newentry.confname = confname;
+                    newentry.startdate = startdate;
+                    newentry.scantype = ScanType.CHECKIN;
+                    newentry.baseurl = String.format("%s/events/%s/checkin/%s/", sitebase, urlname, confperm.getString("token"));
+                    if (ConditionalAddConference(newentry))
+                        added++;
+                }
+                for (int i = 0; i < scannerfields.length(); i++) {
+                    final ConferenceEntry newentry = new ConferenceEntry();
+                    final String fieldname = scannerfields.getString(i);
+                    newentry.confname = confname;
+                    newentry.startdate = startdate;
+                    newentry.scantype = ScanType.CHECKINFIELD;
+                    newentry.fieldname = fieldname;
+                    newentry.baseurl = String.format("%s/events/%s/checkin/%s/f%s/", sitebase, urlname, confperm.getString("token"), fieldname);
+
+                    if (ConditionalAddConference(newentry))
+                        added++;
+                }
+                for (int i = 0; i < sponsors.length(); i++) {
+                    final JSONObject sponsor = sponsors.getJSONObject(i);
+                    final ConferenceEntry newentry = new ConferenceEntry();
+                    newentry.confname = confname;
+                    newentry.startdate = startdate;
+                    newentry.scantype = ScanType.SPONSORBADGE;
+                    newentry.sponsorname = sponsor.getString("sponsor");
+                    newentry.baseurl = String.format("%s/events/sponsor/scanning/%s/", sitebase, sponsor.getString("token"));
+
+                    if (ConditionalAddConference(newentry))
+                        added++;
+                }
+            }
+            catch (JSONException je) {
+                Log.w("conferencescanner", String.format("JSON parse error for conference %s, ignoring this entry", urlname));
+            }
+        }
+
+        if (added > 0) {
+            Collections.sort(conferences);
+            ParamManager.SaveConferences(this, conferences);
+            UpdateNavigationView();
+        }
+    }
+
+    private boolean ConditionalAddConference(ConferenceEntry newentry) {
+        /* Loop over all existing entries and see if this one is already registered */
+        for (ConferenceEntry entry : conferences) {
+            if (newentry.baseurl.equals(entry.baseurl))
+                return false;
+        }
+
+        /* No match, so add it */
+        conferences.add(newentry);
+        return true;
     }
 
     private void StopCamera() {

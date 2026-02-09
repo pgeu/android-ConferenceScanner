@@ -204,10 +204,14 @@ public abstract class ApiBase {
     public class OpenAndAdmin {
         public final boolean open;
         public final boolean admin;
+        public final String sitebase;
+        public final JSONObject permissions;
 
-        public OpenAndAdmin(boolean open, boolean admin) {
+        public OpenAndAdmin(boolean open, boolean admin, String sitebase, JSONObject permissions) {
             this.open = open;
             this.admin = admin;
+            this.sitebase = sitebase;
+            this.permissions = permissions;
         }
     }
 
@@ -217,7 +221,7 @@ public abstract class ApiBase {
             return null;
 
         try {
-            return new OpenAndAdmin(status.getBoolean("active"), status.getBoolean("admin"));
+            return new OpenAndAdmin(status.getBoolean("active"), status.getBoolean("admin"), status.getString("sitebase"), status.getJSONObject("permissions"));
         } catch (JSONException e) {
             lasterror = "Could not parse JSON contents";
             return null;
