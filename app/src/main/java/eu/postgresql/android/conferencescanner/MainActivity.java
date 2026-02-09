@@ -7,6 +7,7 @@ import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.os.Handler;
+import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
 import android.view.SubMenu;
@@ -40,6 +41,7 @@ import androidx.appcompat.widget.Toolbar;
 import android.view.Menu;
 import android.widget.Button;
 import android.widget.EditText;
+import android.widget.ImageView;
 import android.widget.ProgressBar;
 import android.widget.TextView;
 import android.widget.Toast;
@@ -75,6 +77,7 @@ public class MainActivity extends AppCompatActivity
     private PreviewView viewfinder;
     private Button scanbutton;
     private Button searchbutton;
+    private ImageView settingsbutton;
     private boolean cameraActive = false;
 
     private ArrayList<ConferenceEntry> conferences;
@@ -120,6 +123,8 @@ public class MainActivity extends AppCompatActivity
         viewfinder = findViewById(R.id.view_finder);
         scanbutton = findViewById(R.id.scanbutton);
         searchbutton = findViewById(R.id.searchbutton);
+        settingsbutton = navigationView.getHeaderView(0).findViewById(R.id.header_preferences);
+
         scanbutton.setOnClickListener(view -> {
             if (!cameraActive) {
                 if (ContextCompat.checkSelfPermission(MainActivity.this, Manifest.permission.CAMERA) != PackageManager.PERMISSION_GRANTED) {
@@ -134,10 +139,17 @@ public class MainActivity extends AppCompatActivity
                 StopCamera();
             }
         });
+
         searchbutton.setOnClickListener(view -> {
             if (cameraActive)
                 StopCamera();
             DoSearchAttendee();
+        });
+
+        settingsbutton.setClickable(true);
+        settingsbutton.setOnClickListener(view -> {
+            Intent intent = new Intent(this, GlobalSettingsActivity.class);
+            startActivity(intent);
         });
 
         Intent intent = getIntent();
@@ -333,6 +345,9 @@ public class MainActivity extends AppCompatActivity
     }
 
     private void AddConferencesFrom(JSONObject permissions, String sitebase) {
+        if (!PreferenceManager.getDefaultSharedPreferences(this).getBoolean("autoadd", false))
+            return;
+
         int added = 0;
         Iterator<String> urlnames = permissions.keys();
         while (urlnames.hasNext()) {

@@ -1,0 +1,12 @@
+<androidx.preference.PreferenceScreen
+    xmlns:app="http://schemas.android.com/apk/res-auto">
+
+  <PreferenceCategory app:title="Auto registration">
+    <SwitchPreferenceCompat
+        app:key="autoadd"
+        app:title="Auto-add new conferences"
+        app:summary="Automatically add new conferences if they show up as available when loading another conference"
+        app:defaultValue="true"
+        />
+  </PreferenceCategory>
+</androidx.preference.PreferenceScreen>
