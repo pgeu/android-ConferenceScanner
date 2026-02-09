@@ -198,6 +198,10 @@ public abstract class ApiBase {
         return ApiGetJSONObject(String.format("api/search/?search=%s", urlencode(searchterm)));
     }
 
+    public JSONArray GetStatistics() {
+        return ApiGetJSONArray("api/stats/");
+    }
+
     public class OpenAndAdmin {
         public final boolean open;
         public final boolean admin;

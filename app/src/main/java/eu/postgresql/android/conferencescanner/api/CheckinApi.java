@@ -46,8 +46,4 @@ public class CheckinApi extends ApiBase {
         params.put("token", token);
         return ApiPostForJSONObject("api/store/", params);
     }
-
-    public JSONArray GetStatistics() {
-        return ApiGetJSONArray("api/stats/");
-    }
 }

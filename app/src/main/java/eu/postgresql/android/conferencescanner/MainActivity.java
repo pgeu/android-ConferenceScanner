@@ -247,8 +247,7 @@ public class MainActivity extends AppCompatActivity
 
         @Override
         protected JSONArray doInBackground(Void... voids) {
-            CheckinApi api = (CheckinApi) currentConference.getApi(MainActivity.this);
-            return api.GetStatistics();
+            return currentConference.getApi(MainActivity.this).GetStatistics();
         }
 
         @Override
@@ -258,6 +257,7 @@ public class MainActivity extends AppCompatActivity
             if (data != null) {
                 Intent intent = new Intent(MainActivity.this, CheckinStatsActivity.class);
                 intent.putExtra("data", data.toString());
+                intent.putExtra("conference", currentConference.GetMenuTitle());
                 startActivity(intent);
             } else {
                 ErrorBox("Error", "Failed to get checkin statistics");

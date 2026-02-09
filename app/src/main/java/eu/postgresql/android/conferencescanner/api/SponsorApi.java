@@ -2,6 +2,7 @@ package eu.postgresql.android.conferencescanner.api;
 
 import android.content.Context;
 
+import org.json.JSONArray;
 import org.json.JSONException;
 import org.json.JSONObject;
 
@@ -47,4 +48,10 @@ public class SponsorApi extends ApiBase {
         JSONObject store = ApiPostForJSONObject("api/store/", params);
         return (store != null);
     }
+
+    @Override
+    public JSONArray GetStatistics() {
+        return new JSONArray();
+    }
+
 }
