@@ -86,6 +86,7 @@ public class MainActivity extends AppCompatActivity
 
     private static final int INTENT_RESULT_LIST_UPDATED = 1;
     private static final int INTENT_RESULT_CHECKED_IN = 2;
+    private static final int INTENT_RESULT_ADD_CONFERENCE = 3;
 
     public static final int RESULT_ERROR = -2;
     private Menu optionsMenu;
@@ -517,17 +518,7 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.itemAdd) {
-            final EditText input = new EditText(this);
-            input.setInputType(InputType.TYPE_CLASS_TEXT | InputType.TYPE_TEXT_VARIATION_URI);
-            input.setHint("https://test.com/events/test/checkin/abc123def456/");
-
-            new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_FullWidthButtons)
-                    .setTitle("Enter URL")
-                    .setMessage("Paste the full URL for scanning application (this will be an URL that contains a long random set of characters at the end).\n\nNote that in most cases you can also click the link in the email or on the website where you received it, and the conference will automatically be added.")
-                    .setView(input)
-                    .setNegativeButton("Cancel", null)
-                    .setPositiveButton("Add", (dialogInterface, i) -> AddNewConference(input.getText().toString()))
-                    .show();
+            startActivityForResult(new Intent(this, AddConferenceActivity.class), INTENT_RESULT_ADD_CONFERENCE);
         } else if (id == R.id.itemManage) {
             startActivityForResult(new Intent(this, ListConferencesActivity.class), INTENT_RESULT_LIST_UPDATED);
         } else if (id >= MENU_FIRST_CONFERENCE && id < MENU_FIRST_CONFERENCE + conferences.size()) {
@@ -591,14 +582,22 @@ public class MainActivity extends AppCompatActivity
                 /* Canceled */
                 pauseDetection = false;
             }
+        } else if (requestCode == INTENT_RESULT_ADD_CONFERENCE) {
+            if (resultCode == RESULT_OK) {
+                AddNewConference(data.getStringExtra("url"));
+            }
         }
     }
 
-    private String _clean_conference_url(String url) {
+    private static String _clean_conference_url(String url) {
         return url.replaceAll("[/#]+$", "");
     }
 
-    private final Pattern urlpattern = Pattern.compile("^https?://[^/]+/events/[^/]+/(checkin|scanning)/[a-z0-9]+(/f([A-Za-z0-9]+))?$");
+    public static final Pattern urlpattern = Pattern.compile("^https?://[^/]+/events/[^/]+/(checkin|scanning)/[a-z0-9]+(/f([A-Za-z0-9]+))?$");
+
+    public static Matcher GetConferenceUrlMatcher(String url) {
+        return urlpattern.matcher(_clean_conference_url(url));
+    }
 
     private void AddNewConference(String url) {
         String cleanurl = _clean_conference_url(url);

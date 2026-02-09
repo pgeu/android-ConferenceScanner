@@ -16,6 +16,7 @@
         <activity android:name=".CheckinStatsActivity"/>
         <activity android:name=".AttendeeCheckinActivity" />
         <activity android:name=".ListConferencesActivity" />
+        <activity android:name=".AddConferenceActivity" />
         <activity android:name=".GlobalSettingsActivity" android:label="Preferences" />
 
         <activity
