@@ -38,6 +38,8 @@ public class CheckinStatsActivity extends AppCompatActivity {
         StatsAdapter adapter = new StatsAdapter(this, data);
         lvStats.setAdapter(adapter);
         lvStats.expandGroup(0);
+
+        getSupportActionBar().setTitle(String.format("%s - Stats", getIntent().getStringExtra("conference")));
     }
 
     @Override
