@@ -9,4 +9,4 @@ for f in ic_launcher ic_launcher_round ; do
     convert $f.png -resize 192x192 ../app/src/main/res/drawable-xxxhdpi/${f}.png
 done
 
-convert ic_launcher.png -resize 512x512 ../app/src/main/ic_launcher-web.png
+convert ic_launcher.png -resize 512x512! ../app/src/main/ic_launcher-web.png
