@@ -27,7 +27,7 @@
         android:layout_marginLeft="8dp"
         android:layout_marginRight="8dp"
         android:layout_marginTop="8dp"
-        android:text="You can use any of the below methods to add a conference"
+        android:text="You can add a new conference either by copy/paste of the URL to it or by scanning the QR code. If you have enabled auto-add of conferences, adding one conference per site is enough, and it will automatically pick up any other conferences hosted there that you have permissions for."
         />
 
     <com.google.android.material.textfield.TextInputEditText
