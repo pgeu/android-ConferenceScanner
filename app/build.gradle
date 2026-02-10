@@ -37,7 +37,7 @@ dependencies {
     implementation 'androidx.preference:preference:1.2.1'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.7.0'
-    implementation 'com.google.code.gson:gson:2.8.9'
+    implementation 'com.google.code.gson:gson:2.13.2'
     implementation 'com.android.volley:volley:1.2.1'
 
     implementation "androidx.camera:camera-core:1.5.3"
