@@ -368,7 +368,7 @@ public class MainActivity extends AppCompatActivity
                     newentry.confname = confname;
                     newentry.startdate = startdate;
                     newentry.scantype = ScanType.CHECKIN;
-                    newentry.baseurl = String.format("%s/events/%s/checkin/%s/", sitebase, urlname, confperm.getString("token"));
+                    newentry.baseurl = String.format("%s/events/%s/checkin/%s", sitebase, urlname, confperm.getString("token"));
                     if (ConditionalAddConference(newentry))
                         added++;
                 }
@@ -379,7 +379,7 @@ public class MainActivity extends AppCompatActivity
                     newentry.startdate = startdate;
                     newentry.scantype = ScanType.CHECKINFIELD;
                     newentry.fieldname = fieldname;
-                    newentry.baseurl = String.format("%s/events/%s/checkin/%s/f%s/", sitebase, urlname, confperm.getString("token"), fieldname);
+                    newentry.baseurl = String.format("%s/events/%s/checkin/%s/f%s", sitebase, urlname, confperm.getString("token"), fieldname);
 
                     if (ConditionalAddConference(newentry))
                         added++;
@@ -391,7 +391,7 @@ public class MainActivity extends AppCompatActivity
                     newentry.startdate = startdate;
                     newentry.scantype = ScanType.SPONSORBADGE;
                     newentry.sponsorname = sponsor.getString("sponsor");
-                    newentry.baseurl = String.format("%s/events/sponsor/scanning/%s/", sitebase, sponsor.getString("token"));
+                    newentry.baseurl = String.format("%s/events/sponsor/scanning/%s", sitebase, sponsor.getString("token"));
 
                     if (ConditionalAddConference(newentry))
                         added++;
