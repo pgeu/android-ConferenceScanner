@@ -6,8 +6,8 @@ android {
         applicationId "eu.postgresql.android.conferencescanner"
         minSdkVersion 29
         targetSdkVersion 35
-        versionCode 106000
-        versionName "1.6.0"
+        versionCode 107000
+        versionName "1.7.0"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
