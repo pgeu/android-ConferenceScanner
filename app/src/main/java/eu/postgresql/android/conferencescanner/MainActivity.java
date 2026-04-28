@@ -1071,7 +1071,7 @@ public class MainActivity extends AppCompatActivity
             if (success) {
                 ScanCompletedDialog("Attendee scanned", "The attendee scan and note has been stored.");
             } else {
-                if (api.LastStatus() == 403 || api.LastStatus() == 404) {
+                if (api.LastStatus() == 403 || api.LastStatus() == 404 || api.LastStatus() == 412) {
                     ScanCompletedDialog("Scanning failed", api.LastData());
                 } else {
                     ScanCompletedDialog("Network error", api.LastError());
@@ -1118,7 +1118,7 @@ public class MainActivity extends AppCompatActivity
             if (success) {
                 ScanCompletedDialog("Badge scanned", String.format("The attendee field %s has been marked.", fieldname));
             } else {
-                if (api.LastStatus() == 403 || api.LastStatus() == 404) {
+                if (api.LastStatus() == 403 || api.LastStatus() == 404 || api.LastStatus() == 412) {
                     ScanCompletedDialog("Scanning failed", api.LastData());
                 } else {
                     ScanCompletedDialog("Network error", api.LastError());
