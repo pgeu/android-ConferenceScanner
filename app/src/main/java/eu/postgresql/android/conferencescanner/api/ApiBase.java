@@ -1,6 +1,7 @@
 package eu.postgresql.android.conferencescanner.api;
 
 import android.content.Context;
+import android.os.Build;
 
 import com.android.volley.AuthFailureError;
 import com.android.volley.ClientError;
@@ -9,6 +10,9 @@ import com.android.volley.RequestQueue;
 import com.android.volley.toolbox.RequestFuture;
 import com.android.volley.toolbox.StringRequest;
 import com.android.volley.toolbox.Volley;
+import com.android.volley.Response.ErrorListener;
+import com.android.volley.Response.Listener;
+import androidx.annotation.Nullable;
 
 import org.json.JSONArray;
 import org.json.JSONException;
@@ -17,11 +21,13 @@ import org.json.JSONObject;
 import java.io.UnsupportedEncodingException;
 import java.net.URLEncoder;
 import java.nio.charset.StandardCharsets;
+import java.util.HashMap;
 import java.util.Map;
 import java.util.concurrent.ExecutionException;
 import java.util.concurrent.TimeUnit;
 import java.util.concurrent.TimeoutException;
 
+import eu.postgresql.android.conferencescanner.BuildConfig;
 import eu.postgresql.android.conferencescanner.ScanType;
 import eu.postgresql.android.conferencescanner.params.ConferenceEntry;
 
@@ -143,6 +149,19 @@ public abstract class ApiBase {
         return null;
     }
 
+    private class WrappedStringRequest extends StringRequest {
+        public WrappedStringRequest(int method, String url, Listener<String> listener, @Nullable ErrorListener errorListener) {
+            super(method, url, listener, errorListener);
+        }
+
+        @Override
+        public Map<String, String> getHeaders() throws AuthFailureError {
+            Map<String, String> params = new HashMap<>(super.getHeaders());
+            params.put("User-Agent", String.format("ConferenceScanner/%s (Android %s; %s %s)", BuildConfig.VERSION_NAME, Build.VERSION.RELEASE, Build.MANUFACTURER, Build.MODEL));
+            return params;
+        }
+    }
+
     protected String ApiRequestString(int method, String suburl, Map<String, String> postvals) {
         RequestFuture<String> requestFuture = RequestFuture.newFuture();
 
@@ -150,9 +169,9 @@ public abstract class ApiBase {
 
         StringRequest request;
         if (method == Request.Method.GET) {
-            request = new StringRequest(Request.Method.GET, url, requestFuture, requestFuture);
+            request = new WrappedStringRequest(Request.Method.GET, url, requestFuture, requestFuture);
         } else {
-            request = new StringRequest(Request.Method.POST, url, requestFuture, requestFuture) {
+            request = new WrappedStringRequest(Request.Method.POST, url, requestFuture, requestFuture) {
                 @Override
                 public String getBodyContentType() {
                     return "application/x-www-form-urlencoded";
