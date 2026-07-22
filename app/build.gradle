@@ -6,8 +6,8 @@ android {
         applicationId "eu.postgresql.android.conferencescanner"
         minSdkVersion 29
         targetSdkVersion 36
-        versionCode 107006
-        versionName "1.7.6"
+        versionCode 107007
+        versionName "1.7.7"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -43,7 +43,6 @@ dependencies {
     implementation 'androidx.preference:preference:1.2.1'
     testImplementation 'junit:junit:4.13.2'
     androidTestImplementation 'androidx.test:runner:1.7.0'
-    implementation 'com.google.code.gson:gson:2.14.0'
     implementation 'com.android.volley:volley:1.2.1'
 
     implementation "androidx.camera:camera-core:1.6.1"

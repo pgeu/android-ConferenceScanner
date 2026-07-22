@@ -9,8 +9,6 @@ import java.time.LocalDateTime;
 import java.time.format.DateTimeFormatter;
 import java.util.regex.Pattern;
 
-import com.google.gson.annotations.SerializedName;
-
 import eu.postgresql.android.conferencescanner.ScanType;
 import eu.postgresql.android.conferencescanner.api.ApiBase;
 import eu.postgresql.android.conferencescanner.api.CheckinApi;
@@ -19,12 +17,12 @@ import eu.postgresql.android.conferencescanner.api.CheckinFieldApi;
 
 public class ConferenceEntry implements Comparable<ConferenceEntry> {
 
-    @SerializedName("confname") public String confname;
-    @SerializedName("baseurl") public String baseurl;
-    @SerializedName("scantype") public ScanType scantype;
-    @SerializedName("fieldname") public String fieldname;
-    @SerializedName("sponsorname") public String sponsorname;
-    @SerializedName("startdate") public String startdate;
+    public String confname;
+    public String baseurl;
+    public ScanType scantype;
+    public String fieldname;
+    public String sponsorname;
+    public String startdate;
 
     public transient boolean selected;
 
