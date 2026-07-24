@@ -3,10 +3,10 @@ package eu.postgresql.android.conferencescanner;
 import android.Manifest;
 import android.content.Intent;
 import android.content.pm.PackageManager;
-import android.os.AsyncTask;
 import android.os.Bundle;
 
 import android.os.Handler;
+import android.os.Looper;
 import android.preference.PreferenceManager;
 import android.text.InputType;
 import android.util.Log;
@@ -53,6 +53,8 @@ import java.net.MalformedURLException;
 import java.util.ArrayList;
 import java.util.Collections;
 import java.util.concurrent.ExecutionException;
+import java.util.concurrent.Executors;
+import java.util.concurrent.ExecutorService;
 import java.util.Iterator;
 import java.util.ListIterator;
 import java.util.regex.Matcher;
@@ -68,6 +70,9 @@ import eu.postgresql.android.conferencescanner.params.ConferenceEntry;
 
 public class MainActivity extends AppCompatActivity
         implements NavigationView.OnNavigationItemSelectedListener, QRAnalyzer.QRNotificationReceiver {
+
+    private final ExecutorService executor = Executors.newSingleThreadExecutor();
+    private final Handler handler = new Handler(Looper.getMainLooper());
 
     private static final int PERMSSION_REQUEST_CAMERA = 17;
 
@@ -144,7 +149,7 @@ public class MainActivity extends AppCompatActivity
         searchbutton.setOnClickListener(view -> {
             if (cameraActive)
                 StopCamera();
-            DoSearchAttendee();
+            SearchAttendee();
         });
 
         settingsbutton.setClickable(true);
@@ -254,83 +259,35 @@ public class MainActivity extends AppCompatActivity
         return super.onOptionsItemSelected(item);
     }
 
-    private class aShowStatistics extends AsyncTask<Void, Void, JSONArray> {
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected JSONArray doInBackground(Void... voids) {
-            return currentConference.getApi(MainActivity.this).GetStatistics();
-        }
-
-        @Override
-        protected void onPostExecute(JSONArray data) {
-            progressBar.setVisibility(View.INVISIBLE);
-
-            if (data != null) {
-                Intent intent = new Intent(MainActivity.this, CheckinStatsActivity.class);
-                intent.putExtra("data", data.toString());
-                intent.putExtra("conference", currentConference.GetMenuTitle());
-                startActivity(intent);
-            } else {
-                ErrorBox("Error", "Failed to get checkin statistics");
-            }
-        }
-    }
-
     private void ShowStatistics() {
         if (currentConference == null) {
             Log.e("conferencescanner", "There is no current conference!");
             return;
         }
 
+        progressBar.setVisibility(View.VISIBLE);
+        executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    final JSONArray data = currentConference.getApi(MainActivity.this).GetStatistics();
+                    handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setVisibility(View.INVISIBLE);
 
-        new aShowStatistics().execute();
-    }
-
-    private class aUpdateMainView extends AsyncTask<Void, Void, ApiBase.OpenAndAdmin> {
-        private ApiBase api;
-
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected ApiBase.OpenAndAdmin doInBackground(Void... voids) {
-            api = currentConference.getApi(MainActivity.this);
-            return api.GetIsOpenAndAdmin();
-        }
-
-        @Override
-        protected void onPostExecute(ApiBase.OpenAndAdmin data) {
-            progressBar.setVisibility(View.INVISIBLE);
-
-            getSupportActionBar().setTitle(String.format("%s - %s", currentConference.GetMenuTitle(), currentConference.getTypeString()));
-            if (data == null) {
-                ErrorBox("Network error", api.LastError());
-                viewfinder.setVisibility(View.INVISIBLE);
-                searchbutton.setVisibility(View.GONE);
-                scanbutton.setVisibility(View.GONE);
-                txtintro.setText("A network error occurred when communicating with the server. Please pick a different conference in the menu on the left.");
-            } else {
-                viewfinder.setVisibility(View.INVISIBLE);
-                scanbutton.setVisibility(View.VISIBLE);
-                searchbutton.setVisibility(api.CanSearch() ? View.VISIBLE : View.GONE);
-                searchbutton.setEnabled(data.open);
-                txtintro.setText(api.getIntroText(data.open, currentConference));
-                if (currentConference.scantype == ScanType.CHECKIN && optionsMenu != null) {
-                    optionsMenu.findItem(R.id.action_statistics).setEnabled(data.admin);
+                                if (data != null) {
+                                    Intent intent = new Intent(MainActivity.this, CheckinStatsActivity.class);
+                                    intent.putExtra("data", data.toString());
+                                    intent.putExtra("conference", currentConference.GetMenuTitle());
+                                    startActivity(intent);
+                                } else {
+                                    ErrorBox("Error", "Failed to get checkin statistics");
+                                }
+                            }
+                        });
                 }
-
-                /* Each status response includes a list of all conferences we have permissions on. So add any that we don't have already! */
-                AddConferencesFrom(data.permissions, data.sitebase);
-                AutoDeleteConferences();
-            }
+            });
         }
-    }
 
     private void UpdateMainView() {
         if (currentConference == null) {
@@ -342,7 +299,43 @@ public class MainActivity extends AppCompatActivity
             StopCamera(); // To be on the safe side
         } else {
             /* Make a call to see if check-in is actually open here. Thus, async task! */
-            new aUpdateMainView().execute();
+            progressBar.setVisibility(View.VISIBLE);
+            executor.execute(new Runnable() {
+                    @Override
+                    public void run() {
+                        final ApiBase api = currentConference.getApi(MainActivity.this);
+                        final ApiBase.OpenAndAdmin openandadmin = api.GetIsOpenAndAdmin();
+
+                        handler.post(new Runnable() {
+                                @Override
+                                public void run() {
+                                    progressBar.setVisibility(View.INVISIBLE);
+
+                                    getSupportActionBar().setTitle(String.format("%s - %s", currentConference.GetMenuTitle(), currentConference.getTypeString()));
+                                    if (openandadmin == null) {
+                                        ErrorBox("Network error", api.LastError());
+                                        viewfinder.setVisibility(View.INVISIBLE);
+                                        searchbutton.setVisibility(View.GONE);
+                                        scanbutton.setVisibility(View.GONE);
+                                        txtintro.setText("A network error occurred when communicating with the server. Please pick a different conference in the menu on the left.");
+                                    } else {
+                                        viewfinder.setVisibility(View.INVISIBLE);
+                                        scanbutton.setVisibility(View.VISIBLE);
+                                        searchbutton.setVisibility(api.CanSearch() ? View.VISIBLE : View.GONE);
+                                        searchbutton.setEnabled(openandadmin.open);
+                                        txtintro.setText(api.getIntroText(openandadmin.open, currentConference));
+                                        if (currentConference.scantype == ScanType.CHECKIN && optionsMenu != null) {
+                                            optionsMenu.findItem(R.id.action_statistics).setEnabled(openandadmin.admin);
+                                        }
+
+                                        /* Each status response includes a list of all conferences we have permissions on. So add any that we don't have already! */
+                                        AddConferencesFrom(openandadmin.permissions, openandadmin.sitebase);
+                                        AutoDeleteConferences();
+                                    }
+                                }
+                            });
+                    }
+                });
         }
     }
 
@@ -609,15 +602,15 @@ public class MainActivity extends AppCompatActivity
             if (m.group(1).equals("checkin")) {
                 if (m.group(2) != null) {
                     /* Field scanner */
-                    new DoAddConference(new CheckinFieldApi(this, cleanurl)).execute();
+                    DoAddConference(new CheckinFieldApi(this, cleanurl));
                 }
                 else {
                     /* Regular check-in */
-                    new DoAddConference(new CheckinApi(this, cleanurl)).execute();
+                    DoAddConference(new CheckinApi(this, cleanurl));
                 }
             } else if (m.group(1).equals("scanning")) {
                 /* Sponsor scanner */
-                new DoAddConference(new SponsorApi(this, cleanurl)).execute();
+                DoAddConference(new SponsorApi(this, cleanurl));
             }
         } else {
             Log.w("conferencescanner", String.format("Unmatched URL: %s", cleanurl));
@@ -625,99 +618,72 @@ public class MainActivity extends AppCompatActivity
         }
     }
 
-    private class DoAddConference extends AsyncTask<Void, Void, Void> {
-        private final ApiBase api;
-        private boolean skip = false;
-        private String confname = null;
-        private String startdate = null;
-        private String fieldname = null;
-        private String sponsorname = null;
+    private void DoAddConference(ApiBase api) {
+        for (int i = 0; i < conferences.size(); i++) {
+            if (conferences.get(i).baseurl.equals(api.baseurl)) {
+                ErrorBox("Conference already added",
+                         "Conference is already added.");
 
-        private DoAddConference(ApiBase api) {
-            this.api = api;
-        }
-
-        @Override
-        protected void onPreExecute() {
-            for (int i = 0; i < conferences.size(); i++) {
-                if (conferences.get(i).baseurl.equals(api.baseurl)) {
-                    ErrorBox("Conference already added",
-                            "Conference is already added.");
-
-                    // Switch to it
-                    currentConference = conferences.get(i);
-                    UpdateMainView();
-
-                    skip = true;
-                    return;
-                }
-            }
-
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected Void doInBackground(Void... Void) {
-            if (skip)
-                return null;
-
-            confname = api.GetConferenceName();
-            startdate = api.GetConferenceStartDate();
-            if (api.GetScanType() == ScanType.CHECKINFIELD) {
-                fieldname = ((CheckinFieldApi) api).GetFieldName();
-            }
-            else if (api.GetScanType() == ScanType.SPONSORBADGE) {
-                sponsorname = ((SponsorApi) api).GetSponsorName();
-            }
-
-            return null;
-        }
-
-        @Override
-        protected void onPostExecute(Void success) {
-            progressBar.setVisibility(View.INVISIBLE);
-
-            if (skip)
-                return;
-
-            if (confname == null) {
-                ErrorBox("Could not get conference name",
-                        String.format("Failed to get the name of the conference:\n%s", api.LastError()));
-                currentConference = null;
-                UpdateNavigationView();
+                // Switch to it
+                currentConference = conferences.get(i);
                 UpdateMainView();
                 return;
             }
-
-            ConferenceEntry r = new ConferenceEntry();
-            r.baseurl = api.baseurl;
-            r.confname = confname;
-            r.startdate = startdate;
-            r.scantype = api.GetScanType();
-            if (r.scantype == ScanType.CHECKINFIELD) {
-                r.fieldname = fieldname;
-            }
-            else if (r.scantype == ScanType.SPONSORBADGE) {
-                r.sponsorname = sponsorname;
-            }
-
-            if (r.DateExpired() && PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getBoolean("autodel", false)) {
-                ErrorBox("Conference would be deleted", "This conference is old enough that it would immediately be auto-deleted. If you wish to add it, you must first turn off automatic deletion in the preferences.");
-                return;
-            }
-
-            conferences.add(0, r); // Always insert at the top of the list!
-            ParamManager.SaveConferences(MainActivity.this, conferences);
-
-            UpdateNavigationView();
-
-            // Switch to the newly picked one
-            currentConference = r;
-            ParamManager.SaveLastConference(MainActivity.this, currentConference.baseurl);
-            UpdateMainView();
         }
-    }
 
+        progressBar.setVisibility(View.VISIBLE);
+        executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    // First call makes API call so must be async. Subsequent results are cached and can be
+                    // read after we've returned to the main thread.
+                    final String confname = api.GetConferenceName();
+
+                    handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setVisibility(View.INVISIBLE);
+
+                                if (confname == null) {
+                                    ErrorBox("Could not get conference name",
+                                             String.format("Failed to get the name of the conference:\n%s", api.LastError()));
+                                    currentConference = null;
+                                    UpdateNavigationView();
+                                    UpdateMainView();
+                                    return;
+                                }
+
+                                ConferenceEntry r = new ConferenceEntry();
+                                r.baseurl = api.baseurl;
+                                r.confname = confname;
+                                r.startdate = api.GetConferenceStartDate();
+                                r.scantype = api.GetScanType();
+                                if (r.scantype == ScanType.CHECKINFIELD) {
+                                    r.fieldname = ((CheckinFieldApi) api).GetFieldName();
+                                }
+                                else if (r.scantype == ScanType.SPONSORBADGE) {
+                                    r.sponsorname = ((SponsorApi) api).GetSponsorName();
+                                }
+
+                                if (r.DateExpired() && PreferenceManager.getDefaultSharedPreferences(MainActivity.this).getBoolean("autodel", false)) {
+                                    ErrorBox("Conference would be deleted", "This conference is old enough that it would immediately be auto-deleted. If you wish to add it, you must first turn off automatic deletion in the preferences.");
+                                    return;
+                                }
+
+                                conferences.add(0, r); // Always insert at the top of the list!
+                                ParamManager.SaveConferences(MainActivity.this, conferences);
+
+                                UpdateNavigationView();
+
+                                // Switch to the newly picked one
+                                currentConference = r;
+                                ParamManager.SaveLastConference(MainActivity.this, currentConference.baseurl);
+                                UpdateMainView();
+                            }
+                        });
+                }
+            });
+    }
 
     private void ErrorBox(String title, String msg) {
         new MaterialAlertDialogBuilder(this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_FullWidthButtons)
@@ -776,57 +742,52 @@ public class MainActivity extends AppCompatActivity
                 .show();
     }
 
-    private class aHandleScannedCode extends AsyncTask<Void, Void, JSONObject> {
-        private final ApiBase api;
-        private final String qrstring;
+    private void HandleScannedCode(String qrstring) {
+        final ApiBase api = currentConference.getApi(MainActivity.this);
 
-        private aHandleScannedCode(String qrstring) {
-            this.qrstring = qrstring;
-            api = currentConference.getApi(MainActivity.this);
-        }
+        pauseDetection = true;
+        progressBar.setVisibility(View.VISIBLE);
 
-        @Override
-        protected void onPreExecute() {
-            pauseDetection = true;
-            progressBar.setVisibility(View.VISIBLE);
-        }
+        executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    final JSONObject data = api.Lookup(qrstring);
 
-        @Override
-        protected JSONObject doInBackground(Void... voids) {
-            return api.Lookup(qrstring);
-        }
+                    handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setVisibility(View.INVISIBLE);
+                                if (data == null) {
+                                    /* Is it a 404? */
+                                    if (api.LastStatus() == 404) {
+                                        ScanCompletedDialog("Attendee not found", "The scanned code does not appear to be a valid attendee of this conference.");
+                                    } else if (api.LastStatus() == 412) {
+                                        ScanCompletedDialog("Not ready for scan", api.LastData());
+                                    } else if (api.LastStatus() == 403) {
+                                        ScanCompletedDialog("Scanning failed", api.LastData());
+                                    } else {
+                                        ScanCompletedDialog("Network error", api.LastError());
+                                    }
+                                    return;
+                                }
 
-        @Override
-        protected void onPostExecute(JSONObject data) {
-            progressBar.setVisibility(View.INVISIBLE);
-            if (data == null) {
-                /* Is it a 404? */
-                if (api.LastStatus() == 404) {
-                    ScanCompletedDialog("Attendee not found", "The scanned code does not appear to be a valid attendee of this conference.");
-                } else if (api.LastStatus() == 412) {
-                    ScanCompletedDialog("Not ready for scan", api.LastData());
-                } else if (api.LastStatus() == 403) {
-                    ScanCompletedDialog("Scanning failed", api.LastData());
-                } else {
-                    ScanCompletedDialog("Network error", api.LastError());
+                                try {
+                                    Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
+                                    intent.putExtra("scantype", currentConference.scantype);
+                                    intent.putExtra("fieldname", currentConference.fieldname);
+                                    intent.putExtra("token", qrstring);
+
+                                    JSONObject reg = data.getJSONObject("reg");
+                                    intent.putExtra("reg", reg.toString());
+
+                                    startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                                } catch (JSONException e) {
+                                    ScanCompletedDialog("Bad data format", "The data returned from the server was badly formatted");
+                                }
+                            }
+                        });
                 }
-                return;
-            }
-
-            try {
-                Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
-                intent.putExtra("scantype", currentConference.scantype);
-                intent.putExtra("fieldname", currentConference.fieldname);
-                intent.putExtra("token", qrstring);
-
-                JSONObject reg = data.getJSONObject("reg");
-                intent.putExtra("reg", reg.toString());
-
-                startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
-            } catch (JSONException e) {
-                ScanCompletedDialog("Bad data format", "The data returned from the server was badly formatted");
-            }
-        }
+            });
     }
 
     @Override
@@ -858,7 +819,7 @@ public class MainActivity extends AppCompatActivity
                 /* Not a test code, so a real one then */
                 String tokentype = tokenMatcher.group(1);
                 if (tokentype.equals(currentConference.expectedTokenType())) {
-                    new aHandleScannedCode(qrstring).execute();
+                    HandleScannedCode(qrstring);
                 }
                 else {
                     ScanCompletedDialog(String.format("%s scanned", TokenType.tokenIsFrom(tokentype)),
@@ -878,54 +839,48 @@ public class MainActivity extends AppCompatActivity
 
     }
 
-    private class aDoCheckin extends AsyncTask<Void, Void, JSONObject> {
-        private final CheckinApi api;
-        private final String token;
+    private void DoCheckin(String token) {
+        final CheckinApi api = (CheckinApi) currentConference.getApi(MainActivity.this);
 
-        private aDoCheckin(String token) {
-            this.token = token;
-            api = (CheckinApi) currentConference.getApi(MainActivity.this);
-        }
+        progressBar.setVisibility(View.VISIBLE);
+        executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    final JSONObject data = api.PerformCheckin(token);
 
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-        }
+                    handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setVisibility(View.INVISIBLE);
 
-        @Override
-        protected JSONObject doInBackground(Void... voids) {
-            return api.PerformCheckin(token);
-        }
+                                if (data != null) {
+                                    Toast.makeText(MainActivity.this, "Attendee successfully checked in", Toast.LENGTH_LONG).show();
 
-        @Override
-        protected void onPostExecute(JSONObject data) {
-            progressBar.setVisibility(View.INVISIBLE);
+                                    try {
+                                        JSONObject reg = data.getJSONObject("reg");
 
-            if (data != null) {
-                Toast.makeText(MainActivity.this, "Attendee successfully checked in", Toast.LENGTH_LONG).show();
-
-                try {
-                    JSONObject reg = data.getJSONObject("reg");
-
-                    Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
-                    intent.putExtra("scantype", currentConference.scantype);
-                    intent.putExtra("fieldname", currentConference.fieldname);
-                    intent.putExtra("reg", reg.toString());
-                    intent.putExtra("completed", true);
-                    startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
-                } catch (JSONException e) {
-                    ScanCompletedDialog("Bad data format", "The data returned from the server was badly formatted");
+                                        Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
+                                        intent.putExtra("scantype", currentConference.scantype);
+                                        intent.putExtra("fieldname", currentConference.fieldname);
+                                        intent.putExtra("reg", reg.toString());
+                                        intent.putExtra("completed", true);
+                                        startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                                    } catch (JSONException e) {
+                                        ScanCompletedDialog("Bad data format", "The data returned from the server was badly formatted");
+                                    }
+                                } else {
+                                    /* Ugh, something is wrong */
+                                    if (api.LastStatus() == 412) {
+                                        /* We know how to handle this! */
+                                        ScanCompletedDialog("Error checking in", api.LastData());
+                                    } else {
+                                        ScanCompletedDialog("Network error", api.LastError());
+                                    }
+                                }
+                            }
+                        });
                 }
-            } else {
-                /* Ugh, something is wrong */
-                if (api.LastStatus() == 412) {
-                    /* We know how to handle this! */
-                    ScanCompletedDialog("Error checking in", api.LastData());
-                } else {
-                    ScanCompletedDialog("Network error", api.LastError());
-                }
-            }
-        }
+            });
     }
 
     private void CompleteAttendeeCheckin(Intent data) {
@@ -936,86 +891,80 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        new aDoCheckin(data.getStringExtra("token")).execute();
+        DoCheckin(data.getStringExtra("token"));
     }
 
-    private class DoSearchAttendee extends AsyncTask<Void, Void, JSONObject> {
-        private final String searchterm;
-        private final CheckinApi api;
+    private void DoSearchAttendee(String searchterm) {
+        final CheckinApi api = (CheckinApi) currentConference.getApi(MainActivity.this);
 
-        private DoSearchAttendee(String searchterm) {
-            this.searchterm = searchterm;
-            this.api = (CheckinApi) currentConference.getApi(MainActivity.this);
-        }
+        progressBar.setVisibility(View.VISIBLE);
+        executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    final JSONObject data = api.Search(searchterm);
 
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-        }
+                    handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setVisibility(View.INVISIBLE);
 
-        @Override
-        protected JSONObject doInBackground(Void... voids) {
-            return api.Search(searchterm);
-        }
+                                if (data == null) {
+                                    if (api.LastStatus() == 412) {
+                                        ScanCompletedDialog("Not ready for scan", api.LastData());
+                                    } else {
+                                        ScanCompletedDialog("Network error", api.LastError());
+                                    }
+                                    return;
+                                }
 
-        @Override
-        protected void onPostExecute(JSONObject data) {
-            progressBar.setVisibility(View.INVISIBLE);
-
-            if (data == null) {
-                if (api.LastStatus() == 412) {
-                    ScanCompletedDialog("Not ready for scan", api.LastData());
-                } else {
-                    ScanCompletedDialog("Network error", api.LastError());
-                }
-                return;
-            }
-
-            /* If a single entry is returned, then proceed as if it was a direct scan */
-            try {
-                JSONArray regs = data.getJSONArray("regs");
-                if (regs.length() == 0) {
-                    ErrorBox("No attendees found", "No attendees matching search found.");
-                } else if (regs.length() == 1) {
-                    Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
-                    intent.putExtra("scantype", currentConference.scantype);
-                    intent.putExtra("fieldname", currentConference.fieldname);
-                    intent.putExtra("token", regs.getJSONObject(0).getString("token"));
-                    intent.putExtra("reg", regs.getJSONObject(0).toString());
-                    startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
-                } else {
-                    String[] regnames = new String[regs.length()];
-                    for (int i = 0; i < regs.length(); i++) {
-                        regnames[i] = regs.getJSONObject(i).getString("name");
-                    }
-
-                    /* Show the list */
-                    AlertDialog dlg = new MaterialAlertDialogBuilder(MainActivity.this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_FullWidthButtons)
-                            .setTitle("Select attendee")
-                            .setItems(regnames, (dialogInterface, i) -> {
+                                /* If a single entry is returned, then proceed as if it was a direct scan */
                                 try {
-                                    Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
-                                    intent.putExtra("scantype", currentConference.scantype);
-                                    intent.putExtra("fieldname", currentConference.fieldname);
-                                    intent.putExtra("token", regs.getJSONObject(i).getString("token"));
-                                    intent.putExtra("reg", regs.getJSONObject(i).toString());
-                                    startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                                    JSONArray regs = data.getJSONArray("regs");
+                                    if (regs.length() == 0) {
+                                        ErrorBox("No attendees found", "No attendees matching search found.");
+                                    } else if (regs.length() == 1) {
+                                        Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
+                                        intent.putExtra("scantype", currentConference.scantype);
+                                        intent.putExtra("fieldname", currentConference.fieldname);
+                                        intent.putExtra("token", regs.getJSONObject(0).getString("token"));
+                                        intent.putExtra("reg", regs.getJSONObject(0).toString());
+                                        startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                                    } else {
+                                        String[] regnames = new String[regs.length()];
+                                        for (int i = 0; i < regs.length(); i++) {
+                                            regnames[i] = regs.getJSONObject(i).getString("name");
+                                        }
+
+                                        /* Show the list */
+                                        AlertDialog dlg = new MaterialAlertDialogBuilder(MainActivity.this, R.style.ThemeOverlay_MaterialComponents_MaterialAlertDialog_FullWidthButtons)
+                                            .setTitle("Select attendee")
+                                            .setItems(regnames, (dialogInterface, i) -> {
+                                                    try {
+                                                        Intent intent = new Intent(MainActivity.this, AttendeeCheckinActivity.class);
+                                                        intent.putExtra("scantype", currentConference.scantype);
+                                                        intent.putExtra("fieldname", currentConference.fieldname);
+                                                        intent.putExtra("token", regs.getJSONObject(i).getString("token"));
+                                                        intent.putExtra("reg", regs.getJSONObject(i).toString());
+                                                        startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                                                    }
+                                                    catch (JSONException e) {
+                                                        ErrorBox("API Error", "JSON Parser Error on API response");
+                                                    }
+                                            })
+                                            .create();
+                                        dlg.show();
+                                    }
                                 }
                                 catch (JSONException e) {
-                                    ErrorBox("API Error", "JSON Parser Error on API response");
+                                    ErrorBox("API error", "JSON Parser Error on API response");
                                 }
-                            })
-                            .create();
-                    dlg.show();
+                            }
+                        });
                 }
-            }
-            catch (JSONException e) {
-                ErrorBox("API error", "JSON Parser Error on API response");
-            }
-        }
+            });
     }
 
-    private void DoSearchAttendee() {
+    private void SearchAttendee() {
         if (currentConference == null) {
             Log.e("conferencescanner", "There is no current conference!");
             return;
@@ -1038,46 +987,9 @@ public class MainActivity extends AppCompatActivity
                 .setView(container)
                 .setNegativeButton("Cancel", null)
                 .setPositiveButton("Search", (dialogInterface, i) -> {
-                    new DoSearchAttendee(input.getText().toString()).execute();
+                    DoSearchAttendee(input.getText().toString());
                 })
                 .show();
-    }
-
-    private class aDoSponsorScan extends AsyncTask<Void, Void, Boolean> {
-        private final String token;
-        private final String note;
-        private final SponsorApi api;
-
-        private aDoSponsorScan(String token, String note) {
-            this.token = token;
-            this.note = note;
-            api = (SponsorApi) currentConference.getApi(MainActivity.this);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            return api.StoreScan(token, note);
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            progressBar.setVisibility(View.INVISIBLE);
-
-            if (success) {
-                ScanCompletedDialog("Attendee scanned", "The attendee scan and note has been stored.");
-            } else {
-                if (api.LastStatus() == 403 || api.LastStatus() == 404 || api.LastStatus() == 412) {
-                    ScanCompletedDialog("Scanning failed", api.LastData());
-                } else {
-                    ScanCompletedDialog("Network error", api.LastError());
-                }
-            }
-        }
     }
 
     private void CompleteBadgeScan(Intent data) {
@@ -1087,44 +999,32 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        new aDoSponsorScan(data.getStringExtra("token"), data.getStringExtra("note")).execute();
-    }
+        final SponsorApi api = (SponsorApi) currentConference.getApi(MainActivity.this);
+        final String token = data.getStringExtra("token");
+        final String note = data.getStringExtra("note");
 
-    private class aDoCheckinField extends AsyncTask<Void, Void, Boolean> {
-        private final CheckinFieldApi api;
-        private final String token;
-        private final String fieldname;
-
-        private aDoCheckinField(String token, String fieldname) {
-            this.token = token;
-            this.fieldname = fieldname;
-            api = (CheckinFieldApi) currentConference.getApi(MainActivity.this);
-        }
-
-        @Override
-        protected void onPreExecute() {
-            progressBar.setVisibility(View.VISIBLE);
-        }
-
-        @Override
-        protected Boolean doInBackground(Void... voids) {
-            return api.PerformFieldCheckin(token);
-        }
-
-        @Override
-        protected void onPostExecute(Boolean success) {
-            progressBar.setVisibility(View.INVISIBLE);
-
-            if (success) {
-                ScanCompletedDialog("Badge scanned", String.format("The attendee field %s has been marked.", fieldname));
-            } else {
-                if (api.LastStatus() == 403 || api.LastStatus() == 404 || api.LastStatus() == 412) {
-                    ScanCompletedDialog("Scanning failed", api.LastData());
-                } else {
-                    ScanCompletedDialog("Network error", api.LastError());
+        progressBar.setVisibility(View.VISIBLE);
+        executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    final boolean success = api.StoreScan(token, note);
+                    handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setVisibility(View.INVISIBLE);
+                                if (success) {
+                                    ScanCompletedDialog("Attendee scanned", "The attendee scan and note has been stored.");
+                                } else {
+                                    if (api.LastStatus() == 403 || api.LastStatus() == 404 || api.LastStatus() == 412) {
+                                        ScanCompletedDialog("Scanning failed", api.LastData());
+                                    } else {
+                                        ScanCompletedDialog("Network error", api.LastError());
+                                    }
+                                }
+                            }
+                        });
                 }
-            }
-        }
+            });
     }
 
     private void CompleteCheckinField(Intent data) {
@@ -1135,7 +1035,33 @@ public class MainActivity extends AppCompatActivity
             return;
         }
 
-        new aDoCheckinField(data.getStringExtra("token"), currentConference.fieldname).execute();
-    }
+        final CheckinFieldApi api = (CheckinFieldApi) currentConference.getApi(MainActivity.this);
+        final String token = data.getStringExtra("token");
+        final String fieldname = currentConference.fieldname;
 
+        progressBar.setVisibility(View.VISIBLE);
+        executor.execute(new Runnable() {
+                @Override
+                public void run() {
+                    final boolean success = api.PerformFieldCheckin(token);
+
+                    handler.post(new Runnable() {
+                            @Override
+                            public void run() {
+                                progressBar.setVisibility(View.INVISIBLE);
+
+                                if (success) {
+                                    ScanCompletedDialog("Badge scanned", String.format("The attendee field %s has been marked.", fieldname));
+                                } else {
+                                    if (api.LastStatus() == 403 || api.LastStatus() == 404 || api.LastStatus() == 412) {
+                                        ScanCompletedDialog("Scanning failed", api.LastData());
+                                    } else {
+                                        ScanCompletedDialog("Network error", api.LastError());
+                                    }
+                                }
+                            }
+                        });
+                }
+            });
+    }
 }
