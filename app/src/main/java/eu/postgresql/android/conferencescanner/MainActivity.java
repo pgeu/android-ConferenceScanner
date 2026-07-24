@@ -176,7 +176,6 @@ public class MainActivity extends AppCompatActivity
                  * by 100ms. Given the "jump" in the rotation change anyway this should not be noticeable, but fixes
                  * the annoying need to restart the camera.
                  */
-                final Handler handler = new Handler();
                 handler.postDelayed(() -> {
                     StartCamera();
                 }, 100);
