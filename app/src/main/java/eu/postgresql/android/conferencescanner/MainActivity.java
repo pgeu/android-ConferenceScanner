@@ -26,6 +26,7 @@ import androidx.camera.lifecycle.ProcessCameraProvider;
 import androidx.camera.view.PreviewView;
 import androidx.core.app.ActivityCompat;
 import androidx.core.content.ContextCompat;
+import androidx.core.content.IntentCompat;
 import androidx.core.view.GravityCompat;
 import androidx.appcompat.app.ActionBarDrawerToggle;
 import androidx.preference.PreferenceManager;
@@ -559,7 +560,7 @@ public class MainActivity extends AppCompatActivity
 
     private void CheckinActivityResult(ActivityResult result) {
         if (result.getResultCode() == RESULT_OK) {
-            ScanType scantype = (ScanType) result.getData().getSerializableExtra("scantype");
+            ScanType scantype = IntentCompat.getSerializableExtra(result.getData(), "scantype", ScanType.class);
             switch (scantype) {
             case CHECKIN:
                 CompleteAttendeeCheckin(result.getData());

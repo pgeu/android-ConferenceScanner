@@ -2,6 +2,7 @@ package eu.postgresql.android.conferencescanner;
 
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AppCompatActivity;
+import androidx.core.content.IntentCompat;
 
 import android.content.Context;
 import android.content.Intent;
@@ -74,7 +75,7 @@ public class AttendeeCheckinActivity extends AppCompatActivity {
         });
 
         params = new ArrayList<>();
-        ScanType scantype = (ScanType) getIntent().getSerializableExtra("scantype");
+        ScanType scantype = IntentCompat.getSerializableExtra(getIntent(), "scantype", ScanType.class);
         switch (scantype) {
         case CHECKIN:
             SetupForCheckin();
