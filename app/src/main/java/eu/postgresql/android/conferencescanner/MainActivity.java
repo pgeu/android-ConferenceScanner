@@ -14,6 +14,9 @@ import android.view.View;
 import android.view.ViewGroup;
 import android.widget.FrameLayout;
 
+import androidx.activity.result.ActivityResult;
+import androidx.activity.result.ActivityResultLauncher;
+import androidx.activity.result.contract.ActivityResultContracts;
 import androidx.annotation.NonNull;
 import androidx.appcompat.app.AlertDialog;
 import androidx.camera.core.CameraSelector;
@@ -89,9 +92,9 @@ public class MainActivity extends AppCompatActivity
     private ConferenceEntry currentConference = null;
     private final int MENU_FIRST_CONFERENCE = 100000;
 
-    private static final int INTENT_RESULT_LIST_UPDATED = 1;
-    private static final int INTENT_RESULT_CHECKED_IN = 2;
-    private static final int INTENT_RESULT_ADD_CONFERENCE = 3;
+    private ActivityResultLauncher<Intent> ListConferencesLauncher;
+    private ActivityResultLauncher<Intent> CheckinLauncher;
+    private ActivityResultLauncher<Intent> AddConferenceLauncher;
 
     public static final int RESULT_ERROR = -2;
     private Menu optionsMenu;
@@ -179,6 +182,10 @@ public class MainActivity extends AppCompatActivity
                 }, 100);
             }
         }
+
+        AddConferenceLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (result) -> AddNewConferenceActivityResult(result));
+        ListConferencesLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (result) -> ListConferencesActivityResult(result));
+        CheckinLauncher = registerForActivityResult(new ActivityResultContracts.StartActivityForResult(), (result) -> CheckinActivityResult(result));
     }
 
     @Override
@@ -501,9 +508,9 @@ public class MainActivity extends AppCompatActivity
         int id = item.getItemId();
 
         if (id == R.id.itemAdd) {
-            startActivityForResult(new Intent(this, AddConferenceActivity.class), INTENT_RESULT_ADD_CONFERENCE);
+            AddConferenceLauncher.launch(new Intent(this, AddConferenceActivity.class));
         } else if (id == R.id.itemManage) {
-            startActivityForResult(new Intent(this, ListConferencesActivity.class), INTENT_RESULT_LIST_UPDATED);
+            ListConferencesLauncher.launch(new Intent(this, ListConferencesActivity.class));
         } else if (id >= MENU_FIRST_CONFERENCE && id < MENU_FIRST_CONFERENCE + conferences.size()) {
             StopCamera();
             currentConference = conferences.get(id - MENU_FIRST_CONFERENCE);
@@ -517,11 +524,14 @@ public class MainActivity extends AppCompatActivity
         return true;
     }
 
-    @Override
-    protected void onActivityResult(int requestCode, int resultCode, Intent data) {
-        super.onActivityResult(requestCode, resultCode, data);
+    private void AddNewConferenceActivityResult(ActivityResult result) {
+        if (result.getResultCode() == RESULT_OK) {
+            AddNewConference(result.getData().getStringExtra("url"));
+        }
+    }
 
-        if (requestCode == INTENT_RESULT_LIST_UPDATED && resultCode == RESULT_OK) {
+    private void ListConferencesActivityResult(ActivityResult result) {
+        if (result.getResultCode() == RESULT_OK) {
             /*
              * We re-load the full list of conferences here, which means we need to re-find our
              * currently selected one. Yes, it's ugly.
@@ -545,30 +555,28 @@ public class MainActivity extends AppCompatActivity
                 /* The conference we selected has dissappeared, so update the checkin view to reflect */
                 UpdateMainView();
             }
-        } else if (requestCode == INTENT_RESULT_CHECKED_IN) {
-            if (resultCode == RESULT_OK) {
-                ScanType scantype = (ScanType) data.getSerializableExtra("scantype");
-                switch (scantype) {
-                case CHECKIN:
-                    CompleteAttendeeCheckin(data);
-                    break;
-                case SPONSORBADGE:
-                    CompleteBadgeScan(data);
-                    break;
-                case CHECKINFIELD:
-                    CompleteCheckinField(data);
-                    break;
-                }
-            } else if (resultCode == RESULT_ERROR) {
-                ScanCompletedDialog("Error storing data", data.getStringExtra("msg"));
-            } else {
-                /* Canceled */
-                pauseDetection = false;
+        }
+    }
+
+    private void CheckinActivityResult(ActivityResult result) {
+        if (result.getResultCode() == RESULT_OK) {
+            ScanType scantype = (ScanType) result.getData().getSerializableExtra("scantype");
+            switch (scantype) {
+            case CHECKIN:
+                CompleteAttendeeCheckin(result.getData());
+                break;
+            case SPONSORBADGE:
+                CompleteBadgeScan(result.getData());
+                break;
+            case CHECKINFIELD:
+                CompleteCheckinField(result.getData());
+                break;
             }
-        } else if (requestCode == INTENT_RESULT_ADD_CONFERENCE) {
-            if (resultCode == RESULT_OK) {
-                AddNewConference(data.getStringExtra("url"));
-            }
+        } else if (result.getResultCode() == RESULT_ERROR) {
+            ScanCompletedDialog("Error storing data", result.getData().getStringExtra("msg"));
+        } else {
+            /* Canceled */
+            pauseDetection = false;
         }
     }
 
@@ -770,7 +778,7 @@ public class MainActivity extends AppCompatActivity
                                     JSONObject reg = data.getJSONObject("reg");
                                     intent.putExtra("reg", reg.toString());
 
-                                    startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                                    CheckinLauncher.launch(intent);
                                 } catch (JSONException e) {
                                     ScanCompletedDialog("Bad data format", "The data returned from the server was badly formatted");
                                 }
@@ -854,7 +862,7 @@ public class MainActivity extends AppCompatActivity
                                         intent.putExtra("fieldname", currentConference.fieldname);
                                         intent.putExtra("reg", reg.toString());
                                         intent.putExtra("completed", true);
-                                        startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                                        CheckinLauncher.launch(intent);
                                     } catch (JSONException e) {
                                         ScanCompletedDialog("Bad data format", "The data returned from the server was badly formatted");
                                     }
@@ -918,7 +926,7 @@ public class MainActivity extends AppCompatActivity
                                         intent.putExtra("fieldname", currentConference.fieldname);
                                         intent.putExtra("token", regs.getJSONObject(0).getString("token"));
                                         intent.putExtra("reg", regs.getJSONObject(0).toString());
-                                        startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                                        CheckinLauncher.launch(intent);
                                     } else {
                                         String[] regnames = new String[regs.length()];
                                         for (int i = 0; i < regs.length(); i++) {
@@ -935,7 +943,7 @@ public class MainActivity extends AppCompatActivity
                                                         intent.putExtra("fieldname", currentConference.fieldname);
                                                         intent.putExtra("token", regs.getJSONObject(i).getString("token"));
                                                         intent.putExtra("reg", regs.getJSONObject(i).toString());
-                                                        startActivityForResult(intent, INTENT_RESULT_CHECKED_IN);
+                                                        CheckinLauncher.launch(intent);
                                                     }
                                                     catch (JSONException e) {
                                                         ErrorBox("API Error", "JSON Parser Error on API response");
