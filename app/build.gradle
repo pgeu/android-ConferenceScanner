@@ -6,8 +6,8 @@ android {
         applicationId "eu.postgresql.android.conferencescanner"
         minSdkVersion 29
         targetSdkVersion 36
-        versionCode 107007
-        versionName "1.7.7"
+        versionCode 107008
+        versionName "1.7.8"
         testInstrumentationRunner "androidx.test.runner.AndroidJUnitRunner"
     }
     buildTypes {
@@ -34,6 +34,10 @@ android {
         checkReleaseBuilds = false
     }
     namespace = 'eu.postgresql.android.conferencescanner'
+
+    tasks.withType(JavaCompile){
+        options.compilerArgs <<"-Xlint:deprecation"
+    }
 }
 
 dependencies {
