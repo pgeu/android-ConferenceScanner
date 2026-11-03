@@ -41,7 +41,10 @@ jobs:
       - uses: gradle/actions/setup-gradle@v4
 
       - name: Decode keystore
-        run: echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/upload.jks"
+        run: |
+          echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/upload.jks"
+          ls -l "$RUNNER_TEMP/upload.jks"
+          md5sum "$RUNNER_TEMP/upload.jks"
 
       - name: Build signed release bundle
         env:
