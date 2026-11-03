@@ -12,7 +12,7 @@ jobs:
     environment: deploy
     runs-on: ubuntu-latest
     env:
-      PACKAGE_NAME: eu.postgresql.pgconfscanner
+      PACKAGE_NAME: eu.postgresql.android.conferencescanner
       TRACK: alpha
       AAB: app/build/outputs/bundle/release/app-release.aab
 
