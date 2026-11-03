@@ -70,24 +70,33 @@ jobs:
           set -euo pipefail
           API="https://androidpublisher.googleapis.com/androidpublisher/v3/applications/$PACKAGE_NAME"
           UPLOAD="https://androidpublisher.googleapis.com/upload/androidpublisher/v3/applications/$PACKAGE_NAME"
-          AUTH="Authorization: Bearer $TOKEN"
 
-          # 1. Open an edit
-          EDIT_ID=$(curl -sS --fail-with-body -X POST -H "$AUTH" "$API/edits" | jq -r .id)
+          api() {
+            local out status
+            out=$(mktemp)
+            status=$(curl -sS -o "$out" -w '%{http_code}' -H "Authorization: Bearer $TOKEN" "$@")
+            if [ "$status" -ge 400 ]; then
+              echo "::error::HTTP $status from ${@: -1}" >&2
+              cat "$out" >&2
+              return 1
+            fi
+            cat "$out"
+          }
 
-          # 2. Upload the bundle
-          VERSION_CODE=$(curl -sS --fail-with-body -X POST -H "$AUTH" \
-            -H "Content-Type: application/octet-stream" \
+          echo "Creating edit"
+          EDIT_ID=$(api -X POST "$API/edits" | jq -r .id)
+
+          echo "Uploading bundle"
+          VERSION_CODE=$(api -X POST -H "Content-Type: application/octet-stream" \
             --data-binary @"$AAB" \
             "$UPLOAD/edits/$EDIT_ID/bundles?uploadType=media" | jq -r .versionCode)
           echo "Uploaded versionCode $VERSION_CODE"
 
-          # 3. Assign it to the track
-          #    Use status "draft" if the app has never been published yet.
+          echo "Assigning to track $TRACK"
           jq -n --arg track "$TRACK" --arg vc "$VERSION_CODE" --arg name "$GITHUB_REF_NAME" \
-            '{track: $track, releases: [{name: $name, versionCodes: [$vc], status: "completed"}]}' |
-          curl -sS --fail-with-body -X PUT -H "$AUTH" -H "Content-Type: application/json" \
-            --data @- "$API/edits/$EDIT_ID/tracks/$TRACK"
+            '{track: $track, releases: [{name: $name, versionCodes: [$vc], status: "completed"}]}' > release.json
+          api -X PUT -H "Content-Type: application/json" --data @release.json \
+            "$API/edits/$EDIT_ID/tracks/$TRACK" > /dev/null
 
-          # 4. Commit the edit
-          curl -sS --fail-with-body -X POST -H "$AUTH" "$API/edits/$EDIT_ID:commit"
+          echo "Committing edit"
+          api -X POST "$API/edits/$EDIT_ID:commit" > /dev/null
