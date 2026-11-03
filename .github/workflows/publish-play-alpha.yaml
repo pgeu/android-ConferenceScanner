@@ -17,7 +17,7 @@ jobs:
       AAB: app/build/outputs/bundle/release/app-release.aab
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Verify version code and tag name
         run: |
@@ -33,7 +33,7 @@ jobs:
              exit 1
           fi
 
-      - uses: actions/setup-java@v4
+      - uses: actions/setup-java@v6
         with:
           distribution: temurin
           java-version: '17'
@@ -59,7 +59,7 @@ jobs:
 
       - name: Authenticate to Google
         id: auth
-        uses: google-github-actions/auth@v2
+        uses: google-github-actions/auth@v3
         with:
           credentials_json: ${{ secrets.PLAY_SERVICE_ACCOUNT_JSON }}
           token_format: access_token
