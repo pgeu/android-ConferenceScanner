@@ -17,7 +17,7 @@ jobs:
       AAB: app/build/outputs/bundle/release/app-release.aab
 
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v7
 
       - name: Verify version code and tag name
         run: |
