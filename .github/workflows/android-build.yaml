@@ -31,8 +31,9 @@ jobs:
         distribution: temurin
         cache: gradle
 
-    - name: Clean
-      run: ./gradlew clean
+    - uses: gradle/actions/setup-gradle@v6
+      with:
+        cache-provider: basic
 
     - name: Decode keystore
       run: |
