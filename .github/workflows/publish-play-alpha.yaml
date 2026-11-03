@@ -9,6 +9,7 @@ permissions:
 
 jobs:
   publish:
+    environment: deploy
     runs-on: ubuntu-latest
     env:
       PACKAGE_NAME: eu.postgresql.pgconfscanner

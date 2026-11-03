@@ -4,6 +4,8 @@ on: [push, pull_request]
 
 jobs:
   build:
+    environment: ${{ github.ref == 'refs/heads/master' && 'buildandsign' }}
+
     runs-on: ubuntu-latest
 
     steps:
