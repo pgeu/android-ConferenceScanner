@@ -32,6 +32,8 @@ jobs:
       run: echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/upload.jks"
 
     - name: Build APK
+      env:
+        SIGNING_STORE_FILE: ${{ runner.temp }}/upload.jks
       run: ./gradlew assembleRelease
 
     - name: Upload APK artifacts
@@ -41,6 +43,8 @@ jobs:
         path: "app/build/outputs/apk/release/*.apk"
 
     - name: Bulid bundle
+      env:
+        SIGNING_STORE_FILE: ${{ runner.temp }}/upload.jks
       run: ./gradlew bundleRelease --warning-mode all
 
     - name: Upload bundle artifacts
