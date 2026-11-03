@@ -34,6 +34,9 @@ jobs:
     - name: Build APK
       env:
         SIGNING_STORE_FILE: ${{ runner.temp }}/upload.jks
+        SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+        SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+        SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
       run: ./gradlew assembleRelease
 
     - name: Upload APK artifacts
@@ -45,6 +48,9 @@ jobs:
     - name: Bulid bundle
       env:
         SIGNING_STORE_FILE: ${{ runner.temp }}/upload.jks
+        SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
+        SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
+        SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
       run: ./gradlew bundleRelease --warning-mode all
 
     - name: Upload bundle artifacts
