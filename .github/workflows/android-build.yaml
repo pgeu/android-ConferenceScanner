@@ -41,7 +41,12 @@ jobs:
         ls -l "$RUNNER_TEMP/upload.jks"
         md5sum "$RUNNER_TEMP/upload.jks"
 
-    - name: Build APK
+    - name: Build unsigned APK
+      if: github.ref != 'refs/heads/master'
+      run: ./gradlew assembleRelease -PskipSigning
+
+    - name: Build signed APK
+      if: github.ref == 'refs/heads/master'
       env:
         SIGNING_STORE_FILE: ${{ runner.temp }}/upload.jks
         SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
@@ -55,12 +60,17 @@ jobs:
         name: apks
         path: "app/build/outputs/apk/release/*.apk"
 
-    - name: Bulid bundle
+    - name: Build signed bundle
+      if: github.ref == 'refs/heads/master'
       env:
         SIGNING_STORE_FILE: ${{ runner.temp }}/upload.jks
         SIGNING_STORE_PASSWORD: ${{ secrets.SIGNING_STORE_PASSWORD }}
         SIGNING_KEY_ALIAS: ${{ secrets.SIGNING_KEY_ALIAS }}
         SIGNING_KEY_PASSWORD: ${{ secrets.SIGNING_KEY_PASSWORD }}
+      run: ./gradlew bundleRelease --warning-mode all
+
+    - name: Build unsigned bundle
+      if: github.ref != 'refs/heads/master'
       run: ./gradlew bundleRelease --warning-mode all
 
     - name: Upload bundle artifacts
