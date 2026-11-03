@@ -28,6 +28,9 @@ jobs:
     - name: Clean
       run: ./gradlew clean
 
+    - name: Decode keystore
+      run: echo "${{ secrets.UPLOAD_KEYSTORE_BASE64 }}" | base64 -d > "$RUNNER_TEMP/upload.jks"
+
     - name: Build APK
       run: ./gradlew assembleRelease
 
