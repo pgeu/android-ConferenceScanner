@@ -93,8 +93,14 @@ jobs:
           echo "Uploaded versionCode $VERSION_CODE"
 
           echo "Assigning to track $TRACK"
-          jq -n --arg track "$TRACK" --arg vc "$VERSION_CODE" --arg name "$GITHUB_REF_NAME" \
-            '{track: $track, releases: [{name: $name, versionCodes: [$vc], status: "completed"}]}' > release.json
+          NAME=`sed -n 's/.*versionName "\([0-9]\.[0-9]\.[0-9]\)".*/\1/p' app/build.gradle`
+          if [ -f "releasenotes/$NAME.txt" ]; then
+             cp "releasenotes/$NAME.txt" release-notes.txt
+          else
+             echo "Various bug fixes and improvements" > release-notes.txt
+          fi
+          jq -n --arg track "$TRACK" --arg vc "$VERSION_CODE" --arg name "$NAME" --rawfile notes release-notes.txt  \
+            '{track: $track, releases: [{name: $name, versionCodes: [$vc], status: "completed", releaseNotes: [{language: "en-US", text: ($notes | sub("\\s+$"; "") | .[0:500])}]}]}' > release.json
           api -X PUT -H "Content-Type: application/json" --data @release.json \
             "$API/edits/$EDIT_ID/tracks/$TRACK" > /dev/null
 
