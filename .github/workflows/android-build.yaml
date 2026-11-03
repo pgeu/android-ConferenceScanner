@@ -8,6 +8,16 @@ jobs:
 
     steps:
     - uses: actions/checkout@v7
+
+    - name: Verify version code
+      run: |
+        EXPECTEDVER=`sed -n 's/.*versionName "\([0-9]\)\.\([0-9]\)\.\([0-9]\)".*/\10\200\3/p' app/build.gradle`
+        ACTUALVER=`sed -n 's/.*versionCode \([0-9]\+\).*/\1/p' app/build.gradle`
+        if [ "$EXPECTEDVER" != "$ACTUALVER" ]; then
+          echo "Expected version code ${EXPECTEDVER}, got ${ACTUALVER}"
+          exit 1
+        fi
+
     - name: Set up JDK
       uses: actions/setup-java@v6
       with:

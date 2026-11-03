@@ -18,6 +18,20 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Verify version code and tag name
+        run: |
+          EXPECTEDVER=`sed -n 's/.*versionName "\([0-9]\)\.\([0-9]\)\.\([0-9]\)".*/\10\200\3/p' app/build.gradle`
+          ACTUALVER=`sed -n 's/.*versionCode \([0-9]\+\).*/\1/p' app/build.gradle`
+          if [ "$EXPECTEDVER" != "$ACTUALVER" ]; then
+             echo "Expected version code ${EXPECTEDVER}, got ${ACTUALVER}"
+             exit 1
+          fi
+          EXPECTEDTAG=`sed -n 's/.*versionName "\([0-9]\)\.\([0-9]\)\.\([0-9]\)".*/refs\/tags\/REL_\1_\2_\3/p' app/build.gradle`
+          if [ "$EXPECTEDTAG" != "$GITHUB_REF" ]; then
+             echo "Expected tag name ${EXPECTEDTAG}, got ${GITHUB_REF}"
+             exit 1
+          fi
+
       - uses: actions/setup-java@v4
         with:
           distribution: temurin
