@@ -71,7 +71,7 @@ jobs:
 
     - name: Build unsigned bundle
       if: github.ref != 'refs/heads/master'
-      run: ./gradlew bundleRelease --warning-mode all
+      run: ./gradlew bundleRelease --warning-mode all -PskipSigning
 
     - name: Upload bundle artifacts
       uses: actions/upload-artifact@v7
